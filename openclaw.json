@@ -1,0 +1,378 @@
+{
+  "name": "tomorrowdao-agent-skills",
+  "description": "TomorrowDAO agent skill tools for DAO governance, network governance, BP election and resource trading. SECURITY: Never expose private keys in channel outputs.",
+  "tools": [
+    {
+      "name": "tomorrowdao_dao_create",
+      "description": "Create DAO on chain. Use execution mode simulate/send.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "create"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_dao_update_metadata",
+      "description": "Update DAO metadata.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "update-metadata"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_dao_proposal_create",
+      "description": "Create DAO proposal (transfer/governance/veto).",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "proposal-create"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_dao_vote",
+      "description": "Vote for DAO proposal.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "vote"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_dao_withdraw",
+      "description": "Withdraw DAO vote.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "withdraw"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_dao_execute",
+      "description": "Execute DAO proposal.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "execute"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_discussion_list",
+      "description": "Fetch discussion comments.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "discussion-list"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_discussion_comment",
+      "description": "Publish discussion comment (auth required).",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "discussion-comment"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_proposal_create",
+      "description": "Create network governance proposal.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "proposal-create"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_proposal_vote",
+      "description": "Approve/Reject/Abstain/Release network proposal.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "proposal-vote"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_proposal_release",
+      "description": "Release network proposal.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "proposal-release"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_org_create",
+      "description": "Create organization with threshold pre-check.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "org-create"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_contract_name_check",
+      "description": "Check contract name availability.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "contract-name-check"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_contract_name_add",
+      "description": "Add contract name record (auth required).",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "contract-name-add"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_contract_name_update",
+      "description": "Update contract name record (auth required).",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "contract-name-update"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_contract_flow_start",
+      "description": "Start contract proposal flow (bpApproval/withoutApproval actions).",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "contract-flow-start"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_contract_flow_release",
+      "description": "Release approved/code-checked contract proposal.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "contract-flow-release"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_network_contract_flow_status",
+      "description": "Query contract proposal flow status.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "contract-flow-status"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_bp_apply",
+      "description": "Apply as BP candidate.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "apply"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_bp_quit",
+      "description": "Quit BP election.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "quit"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_bp_vote",
+      "description": "Vote for BP candidate.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "vote"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_bp_withdraw",
+      "description": "Withdraw BP votes.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "withdraw"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_bp_change_vote",
+      "description": "Change BP vote option.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "change-vote"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_bp_claim_profits",
+      "description": "Claim BP profits.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "claim-profits"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_bp_team_desc_add",
+      "description": "Add BP team description (auth required).",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "team-desc-add"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_bp_vote_reclaim",
+      "description": "Update BP vote reclaim status (auth required).",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "vote-reclaim"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_resource_buy",
+      "description": "Buy resource token.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "resource",
+        "buy"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_resource_sell",
+      "description": "Sell resource token.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "resource",
+        "sell"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_resource_realtime_records",
+      "description": "Get resource realtime records.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "resource",
+        "realtime-records"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_resource_turnover",
+      "description": "Get resource turnover.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "resource",
+        "turnover"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "tomorrowdao_resource_records",
+      "description": "Get resource records.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "resource",
+        "records"
+      ],
+      "cwd": "."
+    }
+  ]
+}

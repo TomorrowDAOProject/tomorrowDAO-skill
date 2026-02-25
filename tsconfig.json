@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "types": ["bun-types"],
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "baseUrl": "."
+  },
+  "include": [
+    "index.ts",
+    "tomorrowdao_skill.ts",
+    "src/**/*.ts",
+    "lib/**/*.ts",
+    "bin/**/*.ts",
+    "tests/**/*.ts"
+  ]
+}
