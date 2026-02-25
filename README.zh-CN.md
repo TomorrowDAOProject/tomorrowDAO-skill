@@ -1,66 +1,203 @@
-# TomorrowDAO Agent Skills
+# @tomorrowdao/agent-skills
 
-TomorrowDAO 能力工具包，包含 **MCP + OpenClaw + CLI + SDK** 四种接入方式。
+[English](./README.md) | 中文
 
-## 能力范围
+TomorrowDAO 的 AI Agent Skills 工具包，提供 **MCP + OpenClaw + CLI + SDK** 四种接入方式。
 
-- DAO：创建 DAO、更新 metadata、创建提案、投票、撤回、执行、讨论区接口
-- Network Governance：提案创建/投票/Release、组织创建、合约名管理、合约提案完整流程
-- BP Election：申请/退出、投票/撤回/切票、领取收益、团队信息维护
+## 功能概览
+
+- DAO：创建 DAO、更新 metadata、创建/投票/撤回/执行提案、讨论区接口
+- Network Governance：提案创建/投票/Release、组织创建、合约名管理、合约流程工具
+- BP Election：申请/退出、投票/撤回/切票、分红领取、团队信息维护
 - Resource：资源代币买卖与记录查询
+- 统一返回类型：`ToolResult<T>`、`TxReceipt`
 - 执行模式：`simulate`（默认）和 `send`
 
-## 安装
+## 接入方式
+
+| 模式 | 入口 | 适用场景 |
+|------|------|------|
+| MCP | `src/mcp/server.ts` | Claude Desktop、Cursor、GPT 等 MCP 客户端 |
+| CLI | `tomorrowdao_skill.ts` | 终端脚本、OpenClaw |
+| SDK | `index.ts` | 自定义 Agent、LangChain/LlamaIndex |
+
+## 架构
+
+```text
+tomorrowDAO-skill/
+├── index.ts                # SDK 导出
+├── tomorrowdao_skill.ts    # CLI 适配层
+├── src/
+│   ├── core/               # config/auth/http/chain/tx/error/types
+│   ├── domains/            # dao/network/bp/resource
+│   └── mcp/server.ts       # MCP 适配层
+├── lib/                    # 兼容导出
+├── bin/setup.ts            # claude/cursor/openclaw 一键配置
+├── openclaw.json
+├── mcp-config.example.json
+└── tests/                  # unit/integration/e2e
+```
+
+## 快速开始
+
+### 1. 安装
 
 ```bash
 bun install
 ```
 
-## 环境变量
-
-请参考 [.env.example](./.env.example)。
-
-关键变量：
-
-- `TMRW_API_BASE`（默认 `https://api.tmrwdao.com`）
-- `TMRW_CHAIN_DEFAULT_DAO`（默认 `tDVV`）
-- `TMRW_CHAIN_DEFAULT_NETWORK`（默认 `AELF`）
-- `TMRW_PRIVATE_KEY`
-- `TMRW_SOURCE`（默认 `nightElf`）
-- `TMRW_CA_HASH`（可选）
-
-## CLI 用法
+### 2. 配置环境变量
 
 ```bash
-bun run tomorrowdao_skill.ts dao create --input '{"args":{...}}' --mode simulate
-bun run tomorrowdao_skill.ts network proposal-create --input '{"proposalType":"Parliament","args":{...}}' --mode send
-bun run tomorrowdao_skill.ts bp apply --input '{"args":{...}}' --mode simulate
-bun run tomorrowdao_skill.ts resource buy --input '{"symbol":"WRITE","amount":100000000}' --mode send
+cp .env.example .env
+# 填写 TMRW_PRIVATE_KEY 等配置
 ```
 
-## MCP
+### 3. 一键配置（推荐）
+
+```bash
+# Claude Desktop
+bun run bin/setup.ts claude
+
+# Cursor（项目级）
+bun run bin/setup.ts cursor
+
+# Cursor（全局）
+bun run bin/setup.ts cursor --global
+
+# OpenClaw（打印配置）
+bun run bin/setup.ts openclaw
+
+# OpenClaw（合并到已有配置文件）
+bun run bin/setup.ts openclaw --config-path /path/to/openclaw-config.json
+
+# 查看配置状态
+bun run bin/setup.ts list
+```
+
+## 环境变量
+
+| 变量 | 必填 | 默认值 | 说明 |
+|------|------|------|------|
+| `TMRW_API_BASE` | 否 | `https://api.tmrwdao.com` | TomorrowDAO API 基地址 |
+| `TMRW_AUTH_BASE` | 否 | `https://api.tmrwdao.com` | 鉴权服务基地址 |
+| `TMRW_CHAIN_DEFAULT_DAO` | 否 | `tDVV` | DAO 默认链 |
+| `TMRW_CHAIN_DEFAULT_NETWORK` | 否 | `AELF` | Network Governance 默认链 |
+| `TMRW_AUTH_CHAIN_ID` | 否 | `AELF` | 鉴权签名使用链 ID |
+| `TMRW_PRIVATE_KEY` | `send`/鉴权接口需要 | — | 签名私钥 |
+| `TMRW_SOURCE` | 否 | `nightElf` | 鉴权 `source` 字段 |
+| `TMRW_CA_HASH` | 否 | — | 可选鉴权 `ca_hash` |
+| `TMRW_RPC_AELF` | 否 | `https://aelf-public-node.aelf.io` | AELF RPC |
+| `TMRW_RPC_TDVV` | 否 | `https://tdvv-public-node.aelf.io` | tDVV RPC |
+
+## 使用示例
+
+### CLI
+
+```bash
+# DAO
+bun run tomorrowdao_skill.ts dao create --input '{"args":{"metadata":{"name":"demo"}}}' --mode simulate
+
+# Network Governance
+bun run tomorrowdao_skill.ts network proposal-create --input '{"proposalType":"Parliament","args":{...}}' --mode send
+
+# BP
+bun run tomorrowdao_skill.ts bp apply --input '{"args":{...}}' --mode send
+
+# Resource
+bun run tomorrowdao_skill.ts resource buy --input '{"symbol":"CPU","amount":100000000}' --mode send
+```
+
+### MCP
 
 ```bash
 bun run src/mcp/server.ts
 ```
 
-MCP 配置模板见 [mcp-config.example.json](./mcp-config.example.json)。
+可参考 [mcp-config.example.json](./mcp-config.example.json)：
 
-## OpenClaw
-
-仓库内已提供 `openclaw.json`。
-
-```bash
-bun run bin/setup.ts openclaw --config-path /path/to/your/openclaw-config.json
+```json
+{
+  "mcpServers": {
+    "tomorrowdao-agent-skills": {
+      "command": "bun",
+      "args": ["run", "/ABSOLUTE/PATH/TO/src/mcp/server.ts"],
+      "env": {
+        "TMRW_PRIVATE_KEY": "<YOUR_PRIVATE_KEY>",
+        "TMRW_API_BASE": "https://api.tmrwdao.com",
+        "TMRW_CHAIN_DEFAULT_DAO": "tDVV",
+        "TMRW_CHAIN_DEFAULT_NETWORK": "AELF"
+      }
+    }
+  }
+}
 ```
 
-## 平台配置脚本
+### SDK
 
-```bash
-bun run bin/setup.ts claude
-bun run bin/setup.ts cursor --global
-bun run bin/setup.ts list
+```ts
+import { daoCreate, networkProposalCreate } from '@tomorrowdao/agent-skills';
+
+const daoRes = await daoCreate({
+  chainId: 'tDVV',
+  mode: 'simulate',
+  args: { metadata: { name: 'hello codex' } },
+});
+
+const proposalRes = await networkProposalCreate({
+  chainId: 'AELF',
+  proposalType: 'Parliament',
+  mode: 'simulate',
+  args: { title: 'demo', description: 'demo' },
+});
 ```
+
+## MCP 工具（共 31 个）
+
+### DAO（8）
+- `tomorrowdao_dao_create`
+- `tomorrowdao_dao_update_metadata`
+- `tomorrowdao_dao_proposal_create`
+- `tomorrowdao_dao_vote`
+- `tomorrowdao_dao_withdraw`
+- `tomorrowdao_dao_execute`
+- `tomorrowdao_discussion_list`
+- `tomorrowdao_discussion_comment`
+
+### Network Governance（10）
+- `tomorrowdao_network_proposal_create`
+- `tomorrowdao_network_proposal_vote`
+- `tomorrowdao_network_proposal_release`
+- `tomorrowdao_network_org_create`
+- `tomorrowdao_network_contract_name_check`
+- `tomorrowdao_network_contract_name_add`
+- `tomorrowdao_network_contract_name_update`
+- `tomorrowdao_network_contract_flow_start`
+- `tomorrowdao_network_contract_flow_release`
+- `tomorrowdao_network_contract_flow_status`
+
+### BP（8）
+- `tomorrowdao_bp_apply`
+- `tomorrowdao_bp_quit`
+- `tomorrowdao_bp_vote`
+- `tomorrowdao_bp_withdraw`
+- `tomorrowdao_bp_change_vote`
+- `tomorrowdao_bp_claim_profits`
+- `tomorrowdao_bp_team_desc_add`
+- `tomorrowdao_bp_vote_reclaim`
+
+### Resource（5）
+- `tomorrowdao_resource_buy`
+- `tomorrowdao_resource_sell`
+- `tomorrowdao_resource_realtime_records`
+- `tomorrowdao_resource_turnover`
+- `tomorrowdao_resource_records`
+
+## 网络与能力范围
+
+- 支持链：`AELF`、`tDVV`
+- Network Governance / BP / Resource 的写操作仅支持 `AELF`
+- DAO 默认 `tDVV`，可显式传 `chainId`
 
 ## 测试
 
@@ -68,9 +205,17 @@ bun run bin/setup.ts list
 bun run test:unit
 bun run test:integration
 bun run test:e2e
+
+# 真实只读 e2e（公网 API）
+RUN_TMRW_E2E=1 bun run test:e2e
 ```
 
 ## 安全建议
 
-- 不要在日志/消息中暴露私钥。
-- 先用 `execution_mode=simulate` 做预检，确认后再切换到 `send`。
+- 不要在日志和对话里暴露私钥。
+- 先用 `simulate` 预检，再切到 `send`。
+- 主网验收时优先用最小额度/最小影响操作。
+
+## License
+
+MIT
