@@ -215,6 +215,12 @@ const proposalRes = await networkProposalCreate({
 - Network governance/BP/resource write operations are `AELF` only
 - DAO defaults to `tDVV` unless `chainId` is explicitly set
 
+## Contract Address Policy
+
+- DAO/Network system contract addresses in `src/core/config.ts` are intentionally hardcoded defaults.
+- This is a deliberate mainnet design choice confirmed by the team: these addresses are treated as long-term stable system contracts.
+- If testnet/devnet override is required in future, introduce it in a dedicated feature branch to avoid changing current mainnet behavior.
+
 ## Compatibility Layer
 
 - `lib/*` files are compatibility re-exports for older import paths.

@@ -215,6 +215,12 @@ const proposalRes = await networkProposalCreate({
 - Network Governance / BP / Resource 的写操作仅支持 `AELF`
 - DAO 默认 `tDVV`，可显式传 `chainId`
 
+## 合约地址策略
+
+- `src/core/config.ts` 中 DAO/Network 系统合约地址当前为有意硬编码默认值。
+- 这是团队已确认的主网设计选择：这些地址按“长期稳定的系统合约”处理。
+- 如未来要支持 testnet/devnet 覆盖，再通过独立 feature 分支引入 override，避免影响当前主网行为。
+
 ## 兼容层说明
 
 - `lib/*` 文件用于兼容旧版 import 路径（re-export）。

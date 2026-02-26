@@ -224,9 +224,13 @@ describe('network domain', () => {
     });
 
     expect(wrongChain.success).toBeFalse();
+    expect(wrongChain.error?.code).toBe('UNSUPPORTED_CHAIN');
     expect(invalidMinVote.success).toBeFalse();
+    expect(invalidMinVote.error?.code).toBe('INVALID_INPUT');
     expect(invalidParliamentRatio.success).toBeFalse();
+    expect(invalidParliamentRatio.error?.code).toBe('INVALID_INPUT');
     expect(invalidAssociationMembers.success).toBeFalse();
+    expect(invalidAssociationMembers.error?.code).toBe('INVALID_INPUT');
   });
 
   test('validates required network inputs', async () => {

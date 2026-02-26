@@ -11,25 +11,10 @@ import type {
 } from './types.js';
 import { getWalletByPrivateKey } from './signature.js';
 import { waitForTxResult } from './tx-waiter.js';
-
-const aelfCache = new Map<string, any>();
-
-function getAelf(rpcUrl: string): any {
-  const cacheMax = Math.max(1, getConfig().aelfCacheMax || 1);
-  if (!aelfCache.has(rpcUrl)) {
-    if (aelfCache.size >= cacheMax) {
-      const oldestKey = aelfCache.keys().next().value;
-      if (oldestKey) {
-        aelfCache.delete(oldestKey);
-      }
-    }
-    aelfCache.set(rpcUrl, new AElf(new AElf.providers.HttpProvider(rpcUrl, 20_000)));
-  }
-  return aelfCache.get(rpcUrl);
-}
+import { clearAelfPool, getAelfByRpc } from './aelf-pool.js';
 
 export function clearAelfCache(): void {
-  aelfCache.clear();
+  clearAelfPool();
 }
 
 async function getContract(input: ChainCallInput, privateKey?: string): Promise<any> {
@@ -37,7 +22,7 @@ async function getContract(input: ChainCallInput, privateKey?: string): Promise<
   const rpc = config.rpc[input.chainId];
   if (!rpc) throw new SkillError('UNSUPPORTED_CHAIN', `No rpc configured for ${input.chainId}`);
 
-  const aelf = getAelf(rpc);
+  const aelf = getAelfByRpc(rpc);
   const wallet = privateKey ? getWalletByPrivateKey(privateKey) : AElf.wallet.createNewWallet();
   const contract = await aelf.chain.contractAt(input.contractAddress, wallet);
   return {

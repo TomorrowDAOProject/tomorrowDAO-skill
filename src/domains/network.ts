@@ -5,9 +5,9 @@ import {
   type ProposalContractType,
 } from '../core/config.js';
 import { callSend, callView } from '../core/chain-client.js';
-import { fail, ok, requireField } from '../core/errors.js';
+import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { apiGet, apiPost } from '../core/http.js';
-import type { ChainId, ExecutionMode, ToolResult } from '../core/types.js';
+import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
 
 export type VoteAction = 'Approve' | 'Reject' | 'Abstain' | 'Release';
 
@@ -78,7 +78,7 @@ function networkChain(chainId?: ChainId): ChainId {
 
 function ensureNetworkMainChain(chainId: ChainId): ChainId {
   if (chainId !== 'AELF') {
-    throw new Error(`network governance only supports AELF, got ${chainId}`);
+    throw new SkillError('UNSUPPORTED_CHAIN', `network governance only supports AELF, got ${chainId}`);
   }
   return chainId;
 }
@@ -103,15 +103,15 @@ function validateOrganizationThresholds(input: NetworkOrganizationCreateInput): 
   const minVote = Number(t.minimalVoteThreshold || 0);
 
   if (minApproval > minVote) {
-    throw new Error('Minimal Approval Threshold must be less than or equal to Minimal Vote Threshold');
+    throw new SkillError('INVALID_INPUT', 'Minimal Approval Threshold must be <= Minimal Vote Threshold');
   }
 
   if (input.proposalType === 'Parliament') {
     if (minApproval + maxAbstention > 10000) {
-      throw new Error('Maximal Abstention Threshold + Minimal Approval Threshold must be <= 100%');
+      throw new SkillError('INVALID_INPUT', 'Maximal Abstention Threshold + Minimal Approval Threshold must be <= 100%');
     }
     if (minApproval + maxRejection > 10000) {
-      throw new Error('Maximal Rejection Threshold + Minimal Approval Threshold must be <= 100%');
+      throw new SkillError('INVALID_INPUT', 'Maximal Rejection Threshold + Minimal Approval Threshold must be <= 100%');
     }
   }
 
@@ -119,13 +119,13 @@ function validateOrganizationThresholds(input: NetworkOrganizationCreateInput): 
     const members = args?.organizationMemberList?.organizationMembers || [];
     const memberCount = Array.isArray(members) ? members.length : 0;
     if (minVote > memberCount) {
-      throw new Error('Minimal Vote Threshold must be <= organization member count');
+      throw new SkillError('INVALID_INPUT', 'Minimal Vote Threshold must be <= organization member count');
     }
     if (minApproval + maxAbstention > memberCount) {
-      throw new Error('Maximal Abstention Threshold + Minimal Approval Threshold must be <= organization member count');
+      throw new SkillError('INVALID_INPUT', 'Maximal Abstention Threshold + Minimal Approval Threshold must be <= organization member count');
     }
     if (minApproval + maxRejection > memberCount) {
-      throw new Error('Maximal Rejection Threshold + Minimal Approval Threshold must be <= organization member count');
+      throw new SkillError('INVALID_INPUT', 'Maximal Rejection Threshold + Minimal Approval Threshold must be <= organization member count');
     }
   }
 }
@@ -135,9 +135,9 @@ export async function networkProposalsList(params: {
   skipCount?: number;
   maxResultCount?: number;
   proposalType?: number;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<PagedResponse>> {
   try {
-    const data = await apiGet('/networkdao/proposals', {
+    const data = await apiGet<PagedResponse>('/networkdao/proposals', {
       chainId: networkChain(params.chainId),
       skipCount: params.skipCount || 0,
       maxResultCount: params.maxResultCount || 20,
@@ -152,10 +152,10 @@ export async function networkProposalsList(params: {
 export async function networkProposalGet(params: {
   chainId?: ChainId;
   proposalId: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
     requireField(params.proposalId, 'proposalId');
-    const data = await apiGet('/networkdao/proposal/info', {
+    const data = await apiGet<JsonObject>('/networkdao/proposal/info', {
       chainId: networkChain(params.chainId),
       proposalId: params.proposalId,
     });
@@ -241,9 +241,9 @@ export async function networkOrganizationsList(params: {
   proposalType?: number;
   skipCount?: number;
   maxResultCount?: number;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<PagedResponse>> {
   try {
-    const data = await apiGet('/networkdao/org', {
+    const data = await apiGet<PagedResponse>('/networkdao/org', {
       chainId: networkChain(params.chainId),
       proposalType: params.proposalType,
       skipCount: params.skipCount || 0,
@@ -258,10 +258,10 @@ export async function networkOrganizationsList(params: {
 export async function networkContractNameCheck(params: {
   chainId?: ChainId;
   contractName: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
     requireField(params.contractName, 'contractName');
-    const data = await apiGet('/networkdao/contract/check', {
+    const data = await apiGet<JsonObject>('/networkdao/contract/check', {
       chainId: networkChain(params.chainId),
       contractName: params.contractName,
     });
@@ -371,7 +371,7 @@ export async function networkContractFlowStatus(params: {
   chainId?: ChainId;
   proposalId?: string;
   codeHash?: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
     const chainId = ensureNetworkMainChain(networkChain(params.chainId));
     const [proposalStatus, registrationStatus] = await Promise.all([

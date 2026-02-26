@@ -1,4 +1,5 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, spyOn, test } from 'bun:test';
+import * as aelfPool from '../../src/core/aelf-pool.js';
 import { waitForTxResult } from '../../src/core/tx-waiter.js';
 import { startMockAelfRpcServer } from '../helpers/mock-chain.js';
 
@@ -65,5 +66,24 @@ describe('tx waiter', () => {
     ).rejects.toMatchObject({
       code: 'TX_TIMEOUT',
     });
+  });
+
+  test('uses shared AElf factory from aelf pool', async () => {
+    const rpc = startMockAelfRpcServer([{ Status: 'MINED' }]);
+    const getAelfSpy = spyOn(aelfPool, 'getAelfByRpc');
+
+    try {
+      const result = await waitForTxResult(rpc.rpcUrl, '0xtx-shared-factory', {
+        pollMs: 1,
+        maxAttempts: 1,
+      });
+
+      expect(result.status).toBe('MINED');
+      expect(getAelfSpy).toHaveBeenCalledTimes(1);
+      expect(getAelfSpy.mock.calls[0]?.[0]).toBe(rpc.rpcUrl);
+    } finally {
+      getAelfSpy.mockRestore();
+      rpc.stop();
+    }
   });
 });

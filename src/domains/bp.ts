@@ -2,7 +2,7 @@ import { CONTRACTS, getConfig } from '../core/config.js';
 import { callSend } from '../core/chain-client.js';
 import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { apiGet, apiPost } from '../core/http.js';
-import type { ChainId, ExecutionMode, ToolResult } from '../core/types.js';
+import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
 
 function bpChain(chainId?: ChainId): ChainId {
   return chainId || getConfig().defaultNetworkChain;
@@ -155,9 +155,9 @@ export async function bpVotesList(input: {
   chainId?: ChainId;
   skipCount?: number;
   maxResultCount?: number;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<PagedResponse>> {
   try {
-    const data = await apiGet('/networkdao/votes', {
+    const data = await apiGet<PagedResponse>('/networkdao/votes', {
       chainId: bpChain(input.chainId),
       skipCount: input.skipCount || 0,
       maxResultCount: input.maxResultCount || 20,
@@ -171,10 +171,10 @@ export async function bpVotesList(input: {
 export async function bpTeamDescGet(input: {
   chainId?: ChainId;
   publicKey: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
     requireField(input.publicKey, 'publicKey');
-    const data = await apiGet('/networkdao/vote/getTeamDesc', {
+    const data = await apiGet<JsonObject>('/networkdao/vote/getTeamDesc', {
       chainId: bpChain(input.chainId),
       publicKey: input.publicKey,
     });
@@ -184,9 +184,9 @@ export async function bpTeamDescGet(input: {
   }
 }
 
-export async function bpTeamDescList(input: { chainId?: ChainId }): Promise<ToolResult<unknown>> {
+export async function bpTeamDescList(input: { chainId?: ChainId }): Promise<ToolResult<PagedResponse>> {
   try {
-    const data = await apiGet('/networkdao/vote/getAllTeamDesc', {
+    const data = await apiGet<PagedResponse>('/networkdao/vote/getAllTeamDesc', {
       chainId: bpChain(input.chainId),
     });
     return ok(data);

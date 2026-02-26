@@ -2,7 +2,7 @@ import { CONTRACTS, getConfig, getTokenContractAddress } from '../core/config.js
 import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { callSend, callView } from '../core/chain-client.js';
 import { apiGet, apiPost } from '../core/http.js';
-import type { ChainId, ExecutionMode, ToolResult } from '../core/types.js';
+import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
 
 export interface DaoCreateInput {
   chainId?: ChainId;
@@ -239,9 +239,9 @@ export async function daoExecute(input: DaoExecuteInput): Promise<ToolResult<unk
   }
 }
 
-export async function discussionList(input: DiscussionListInput): Promise<ToolResult<unknown>> {
+export async function discussionList(input: DiscussionListInput): Promise<ToolResult<PagedResponse>> {
   try {
-    const data = await apiGet('/discussion/comment-list', {
+    const data = await apiGet<PagedResponse>('/discussion/comment-list', {
       chainId: input.chainId || daoChain(),
       proposalId: input.proposalId,
       alias: input.alias,
@@ -254,10 +254,10 @@ export async function discussionList(input: DiscussionListInput): Promise<ToolRe
   }
 }
 
-export async function discussionComment(input: DiscussionCommentInput): Promise<ToolResult<unknown>> {
+export async function discussionComment(input: DiscussionCommentInput): Promise<ToolResult<JsonObject>> {
   try {
     requireField(input.comment, 'comment');
-    const data = await apiPost('/discussion/new-comment', {
+    const data = await apiPost<Record<string, unknown>, JsonObject>('/discussion/new-comment', {
       chainId: input.chainId || daoChain(),
       proposalId: input.proposalId,
       alias: input.alias,
@@ -275,12 +275,12 @@ export async function daoProposalMyInfo(params: {
   proposalId: string;
   address: string;
   daoId: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
     requireField(params.proposalId, 'proposalId');
     requireField(params.address, 'address');
     requireField(params.daoId, 'daoId');
-    const data = await apiGet('/proposal/my-info', {
+    const data = await apiGet<JsonObject>('/proposal/my-info', {
       chainId: params.chainId || daoChain(),
       proposalId: params.proposalId,
       address: params.address,
@@ -297,7 +297,7 @@ export async function daoTokenAllowanceView(params: {
   symbol: string;
   owner: string;
   spender: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
     requireField(params.symbol, 'symbol');
     requireField(params.owner, 'owner');
@@ -313,7 +313,7 @@ export async function daoTokenAllowanceView(params: {
         spender: params.spender,
       },
     });
-    return ok(data);
+    return ok((data || {}) as JsonObject);
   } catch (err) {
     return fail(err);
   }

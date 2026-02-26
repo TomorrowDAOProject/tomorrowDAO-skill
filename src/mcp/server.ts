@@ -10,11 +10,18 @@ import { toToolError } from '../core/errors.js';
 import { logError, newTraceId } from '../core/logger.js';
 import {
   addressSchema,
+  bpChangeVoteArgsSchema,
+  bpVoteArgsSchema,
+  bpWithdrawArgsSchema,
   chainIdSchema,
   contractArgsSchema,
+  daoVoteArgsSchema,
+  daoWithdrawArgsSchema,
   daoFileSchema,
   maxResultCountSchema,
   modeSchema,
+  networkProposalActionSchema,
+  networkProposalTypeSchema,
   skipCountSchema,
 } from './schemas.js';
 
@@ -151,7 +158,7 @@ registerTool(
   'Vote in DAO proposal',
   {
     chainId: chainIdSchema,
-    args: contractArgsSchema('{"proposalId":"...","voteOption":1,"voteAmount":100}'),
+    args: daoVoteArgsSchema,
     mode: modeSchema,
   },
   dao.daoVote,
@@ -162,7 +169,7 @@ registerTool(
   'Withdraw DAO vote',
   {
     chainId: chainIdSchema,
-    args: contractArgsSchema('{"proposalId":"...","voteRecordId":"..."}'),
+    args: daoWithdrawArgsSchema,
     mode: modeSchema,
   },
   dao.daoWithdraw,
@@ -270,11 +277,9 @@ registerTool(
   'Vote/release network proposal',
   {
     chainId: chainIdSchema,
-    proposalType: z
-      .enum(['Parliament', 'Association', 'Referendum'])
-      .describe('Proposal contract type.'),
+    proposalType: networkProposalTypeSchema,
     proposalId: z.string().min(1).describe('Proposal id.'),
-    action: z.enum(['Approve', 'Reject', 'Abstain', 'Release']).describe('Vote action.'),
+    action: networkProposalActionSchema,
     mode: modeSchema,
   },
   network.networkProposalVote,
@@ -285,9 +290,7 @@ registerTool(
   'Release network proposal',
   {
     chainId: chainIdSchema,
-    proposalType: z
-      .enum(['Parliament', 'Association', 'Referendum'])
-      .describe('Proposal contract type.'),
+    proposalType: networkProposalTypeSchema,
     proposalId: z.string().min(1).describe('Proposal id.'),
     mode: modeSchema,
   },
@@ -427,7 +430,7 @@ registerTool(
   'Vote for BP candidate',
   {
     chainId: chainIdSchema,
-    args: contractArgsSchema('{"candidatePubkey":"...","amount":100000000}'),
+    args: bpVoteArgsSchema,
     mode: modeSchema,
   },
   bp.bpVote,
@@ -438,7 +441,7 @@ registerTool(
   'Withdraw BP votes',
   {
     chainId: chainIdSchema,
-    args: contractArgsSchema('{"voteId":"..."}'),
+    args: bpWithdrawArgsSchema,
     mode: modeSchema,
   },
   bp.bpWithdraw,
@@ -449,7 +452,7 @@ registerTool(
   'Change BP voting option',
   {
     chainId: chainIdSchema,
-    args: contractArgsSchema('{"voteId":"...","candidatePubkey":"..."}'),
+    args: bpChangeVoteArgsSchema,
     mode: modeSchema,
   },
   bp.bpChangeVote,

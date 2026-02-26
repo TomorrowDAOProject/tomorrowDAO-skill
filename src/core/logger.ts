@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
 const LEVEL_WEIGHT: Record<LogLevel, number> = {
   error: 0,
@@ -9,16 +9,28 @@ const LEVEL_WEIGHT: Record<LogLevel, number> = {
   debug: 3,
 };
 
-function activeLevel(): LogLevel {
-  const raw = (process.env.TMRW_LOG_LEVEL || 'error').toLowerCase();
-  if (raw === 'debug' || raw === 'info' || raw === 'warn' || raw === 'error') {
-    return raw;
+function parseLevel(raw?: string): LogLevel {
+  const value = (raw || '').toLowerCase();
+  if (value === 'debug' || value === 'info' || value === 'warn' || value === 'error') {
+    return value;
   }
   return 'error';
 }
 
-function shouldLog(level: LogLevel): boolean {
-  return LEVEL_WEIGHT[level] <= LEVEL_WEIGHT[activeLevel()];
+let level = parseLevel(process.env.TMRW_LOG_LEVEL || 'error');
+
+function activeLevel(): LogLevel {
+  return level;
+}
+
+export function setLogLevel(nextLevel: LogLevel | string): LogLevel {
+  level = parseLevel(String(nextLevel || ''));
+  return level;
+}
+
+export function resetLogLevelFromEnv(): LogLevel {
+  level = parseLevel(process.env.TMRW_LOG_LEVEL || 'error');
+  return level;
 }
 
 function sanitize(payload: Record<string, unknown>): Record<string, unknown> {
@@ -34,11 +46,15 @@ function sanitize(payload: Record<string, unknown>): Record<string, unknown> {
   return out;
 }
 
-export function log(level: LogLevel, event: string, payload: Record<string, unknown> = {}): void {
-  if (!shouldLog(level)) return;
+function shouldLog(levelName: LogLevel): boolean {
+  return LEVEL_WEIGHT[levelName] <= LEVEL_WEIGHT[activeLevel()];
+}
+
+export function log(levelName: LogLevel, event: string, payload: Record<string, unknown> = {}): void {
+  if (!shouldLog(levelName)) return;
   const entry = {
     ts: new Date().toISOString(),
-    level,
+    level: levelName,
     event,
     ...sanitize(payload),
   };
