@@ -205,6 +205,11 @@ const proposalRes = await networkProposalCreate({
 bun run test:unit
 bun run test:integration
 bun run test:e2e
+bun run test:coverage
+
+# 覆盖率门禁（默认：lines>=65, funcs>=60）
+bun run test:coverage:gate
+COVERAGE_MIN_LINES=70 COVERAGE_MIN_FUNCS=65 bun run test:coverage:ci
 
 # 真实只读 e2e（公网 API）
 RUN_TMRW_E2E=1 bun run test:e2e

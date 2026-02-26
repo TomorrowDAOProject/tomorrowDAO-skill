@@ -205,6 +205,11 @@ const proposalRes = await networkProposalCreate({
 bun run test:unit
 bun run test:integration
 bun run test:e2e
+bun run test:coverage
+
+# coverage gate (default: lines>=65, funcs>=60)
+bun run test:coverage:gate
+COVERAGE_MIN_LINES=70 COVERAGE_MIN_FUNCS=65 bun run test:coverage:ci
 
 # run real read-only e2e against public APIs
 RUN_TMRW_E2E=1 bun run test:e2e

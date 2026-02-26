@@ -34,7 +34,10 @@
     "test": "bun test tests/",
     "test:unit": "bun test tests/unit/",
     "test:integration": "bun test tests/integration/",
-    "test:e2e": "bun test tests/e2e/"
+    "test:e2e": "bun test tests/e2e/",
+    "test:coverage": "bun test --coverage tests/unit/ tests/integration/ tests/e2e/",
+    "test:coverage:gate": "bun run scripts/coverage-gate.ts",
+    "test:coverage:ci": "COVERAGE_MIN_LINES=65 COVERAGE_MIN_FUNCS=60 bun run scripts/coverage-gate.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
