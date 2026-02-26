@@ -6,6 +6,24 @@ import * as dao from '../domains/dao.js';
 import * as network from '../domains/network.js';
 import * as bp from '../domains/bp.js';
 import * as resource from '../domains/resource.js';
+import { toToolError } from '../core/errors.js';
+import { logError, newTraceId } from '../core/logger.js';
+import {
+  addressSchema,
+  bpChangeVoteArgsSchema,
+  bpVoteArgsSchema,
+  bpWithdrawArgsSchema,
+  chainIdSchema,
+  contractArgsSchema,
+  daoVoteArgsSchema,
+  daoWithdrawArgsSchema,
+  daoFileSchema,
+  maxResultCountSchema,
+  modeSchema,
+  networkProposalActionSchema,
+  networkProposalTypeSchema,
+  skipCountSchema,
+} from './schemas.js';
 
 const server = new McpServer({
   name: 'tomorrowdao-agent-skills',
@@ -23,440 +41,551 @@ function format(result: unknown) {
   };
 }
 
-server.registerTool(
+function withTraceId(result: unknown, traceId: string): unknown {
+  if (!result || typeof result !== 'object' || !('success' in result)) {
+    return result;
+  }
+  const record = result as Record<string, unknown>;
+  return {
+    ...record,
+    traceId: record.traceId || traceId,
+  };
+}
+
+async function runTool(name: string, input: unknown, handler: (payload: any) => Promise<unknown>) {
+  const traceId = newTraceId();
+  try {
+    const raw = await handler(input);
+    const result = withTraceId(raw, traceId);
+    if ((result as any)?.success === false) {
+      logError('mcp_tool_failed', {
+        tool: name,
+        traceId,
+        error: (result as any).error,
+      });
+    }
+    return format(result);
+  } catch (err) {
+    const error = toToolError(err);
+    logError('mcp_tool_exception', { tool: name, traceId, error });
+    return format({
+      success: false,
+      traceId,
+      error,
+    });
+  }
+}
+
+function registerTool(
+  name: string,
+  description: string,
+  inputSchema: Record<string, z.ZodTypeAny>,
+  handler: (payload: any) => Promise<unknown>,
+): void {
+  server.registerTool(
+    name,
+    {
+      description,
+      inputSchema,
+    },
+    async (input) => runTool(name, input, handler),
+  );
+}
+
+registerTool(
   'tomorrowdao_dao_create',
+  'Create DAO on chain',
   {
-    description: 'Create DAO on chain',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: contractArgsSchema('{"metadata":{"name":"Demo DAO"}}'),
+    mode: modeSchema,
   },
-  async (input) => format(await dao.daoCreate(input)),
+  dao.daoCreate,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_dao_update_metadata',
+  'Update DAO metadata',
   {
-    description: 'Update DAO metadata',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      daoId: z.string(),
-      metadata: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    daoId: z.string().min(1).describe('DAO id.'),
+    metadata: z.record(z.any()).describe('DAO metadata patch object.'),
+    mode: modeSchema,
   },
-  async (input) => format(await dao.daoUpdateMetadata(input)),
+  dao.daoUpdateMetadata,
 );
 
-server.registerTool(
+registerTool(
+  'tomorrowdao_dao_upload_files',
+  'Upload DAO files',
+  {
+    chainId: chainIdSchema,
+    daoId: z.string().min(1).describe('DAO id.'),
+    files: z.array(daoFileSchema).min(1).describe('File list to upload.'),
+    mode: modeSchema,
+  },
+  dao.daoUploadFiles,
+);
+
+registerTool(
+  'tomorrowdao_dao_remove_files',
+  'Remove DAO files by CID',
+  {
+    chainId: chainIdSchema,
+    daoId: z.string().min(1).describe('DAO id.'),
+    fileCids: z.array(z.string().min(1)).min(1).describe('File CIDs to remove.'),
+    mode: modeSchema,
+  },
+  dao.daoRemoveFiles,
+);
+
+registerTool(
   'tomorrowdao_dao_proposal_create',
+  'Create DAO proposal',
   {
-    description: 'Create DAO proposal',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      methodName: z.enum(['CreateTransferProposal', 'CreateProposal', 'CreateVetoProposal']),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    methodName: z
+      .enum(['CreateTransferProposal', 'CreateProposal', 'CreateVetoProposal'])
+      .describe('DAO proposal contract method.'),
+    args: contractArgsSchema('{"proposalBasicInfo":{"proposalTitle":"My proposal"}}'),
+    mode: modeSchema,
   },
-  async (input) => format(await dao.daoProposalCreate(input)),
+  dao.daoProposalCreate,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_dao_vote',
+  'Vote in DAO proposal',
   {
-    description: 'Vote in DAO proposal',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: daoVoteArgsSchema,
+    mode: modeSchema,
   },
-  async (input) => format(await dao.daoVote(input)),
+  dao.daoVote,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_dao_withdraw',
+  'Withdraw DAO vote',
   {
-    description: 'Withdraw DAO vote',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: daoWithdrawArgsSchema,
+    mode: modeSchema,
   },
-  async (input) => format(await dao.daoWithdraw(input)),
+  dao.daoWithdraw,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_dao_execute',
+  'Execute DAO proposal',
   {
-    description: 'Execute DAO proposal',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      proposalId: z.string(),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    proposalId: z.string().min(1).describe('DAO proposal id.'),
+    mode: modeSchema,
   },
-  async (input) => format(await dao.daoExecute(input)),
+  dao.daoExecute,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_discussion_list',
+  'Get discussion comments list',
   {
-    description: 'Get discussion comments list',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      proposalId: z.string().optional(),
-      alias: z.string().optional(),
-      skipCount: z.number().optional(),
-      maxResultCount: z.number().optional(),
-    },
+    chainId: chainIdSchema,
+    proposalId: z.string().optional().describe('Filter by proposal id.'),
+    alias: z.string().optional().describe('Filter by alias.'),
+    skipCount: skipCountSchema,
+    maxResultCount: maxResultCountSchema,
   },
-  async (input) => format(await dao.discussionList(input)),
+  dao.discussionList,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_discussion_comment',
+  'Create discussion comment (auth required)',
   {
-    description: 'Create discussion comment (auth required)',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      comment: z.string(),
-      proposalId: z.string().optional(),
-      alias: z.string().optional(),
-      parentId: z.string().optional(),
-    },
+    chainId: chainIdSchema,
+    comment: z.string().min(1).describe('Comment content.'),
+    proposalId: z.string().optional().describe('Related proposal id.'),
+    alias: z.string().optional().describe('Alias for discussion board.'),
+    parentId: z.string().optional().describe('Parent comment id for reply.'),
   },
-  async (input) => format(await dao.discussionComment(input)),
+  dao.discussionComment,
 );
 
-server.registerTool(
+registerTool(
+  'tomorrowdao_dao_proposal_my_info',
+  'Get my DAO proposal info (auth required)',
+  {
+    chainId: chainIdSchema,
+    proposalId: z.string().min(1).describe('Proposal id.'),
+    address: addressSchema,
+    daoId: z.string().min(1).describe('DAO id.'),
+  },
+  dao.daoProposalMyInfo,
+);
+
+registerTool(
+  'tomorrowdao_dao_token_allowance_view',
+  'Get token allowance for DAO vote token',
+  {
+    chainId: chainIdSchema,
+    symbol: z.string().min(1).describe('Token symbol, e.g. ELF.'),
+    owner: addressSchema.describe('Owner address.'),
+    spender: addressSchema.describe('Spender address.'),
+  },
+  dao.daoTokenAllowanceView,
+);
+
+registerTool(
+  'tomorrowdao_network_proposals_list',
+  'List network governance proposals',
+  {
+    chainId: chainIdSchema,
+    skipCount: skipCountSchema,
+    maxResultCount: maxResultCountSchema,
+    proposalType: z.number().optional().describe('Optional proposal type filter.'),
+  },
+  network.networkProposalsList,
+);
+
+registerTool(
+  'tomorrowdao_network_proposal_get',
+  'Get single network proposal detail',
+  {
+    chainId: chainIdSchema,
+    proposalId: z.string().min(1).describe('Proposal id.'),
+  },
+  network.networkProposalGet,
+);
+
+registerTool(
   'tomorrowdao_network_proposal_create',
+  'Create network proposal',
   {
-    description: 'Create network proposal',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      proposalType: z.enum(['Parliament', 'Association', 'Referendum']),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    proposalType: z
+      .enum(['Parliament', 'Association', 'Referendum'])
+      .describe('Proposal contract type.'),
+    args: contractArgsSchema('{"title":"...","description":"...","contractMethodName":"..."}'),
+    mode: modeSchema,
   },
-  async (input) => format(await network.networkProposalCreate(input)),
+  network.networkProposalCreate,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_network_proposal_vote',
+  'Vote/release network proposal',
   {
-    description: 'Vote/release network proposal',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      proposalType: z.enum(['Parliament', 'Association', 'Referendum']),
-      proposalId: z.string(),
-      action: z.enum(['Approve', 'Reject', 'Abstain', 'Release']),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    proposalType: networkProposalTypeSchema,
+    proposalId: z.string().min(1).describe('Proposal id.'),
+    action: networkProposalActionSchema,
+    mode: modeSchema,
   },
-  async (input) => format(await network.networkProposalVote(input)),
+  network.networkProposalVote,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_network_proposal_release',
+  'Release network proposal',
   {
-    description: 'Release network proposal',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      proposalType: z.enum(['Parliament', 'Association', 'Referendum']),
-      proposalId: z.string(),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    proposalType: networkProposalTypeSchema,
+    proposalId: z.string().min(1).describe('Proposal id.'),
+    mode: modeSchema,
   },
-  async (input) => format(await network.networkProposalRelease(input)),
+  network.networkProposalRelease,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_network_org_create',
+  'Create organization',
   {
-    description: 'Create organization',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      proposalType: z.enum(['Parliament', 'Association', 'Referendum']),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    proposalType: z
+      .enum(['Parliament', 'Association', 'Referendum'])
+      .describe('Organization governance type.'),
+    args: contractArgsSchema('{"proposalReleaseThreshold":{"minimalApprovalThreshold":4000,...}}'),
+    mode: modeSchema,
   },
-  async (input) => format(await network.networkOrganizationCreate(input)),
+  network.networkOrganizationCreate,
 );
 
-server.registerTool(
+registerTool(
+  'tomorrowdao_network_org_list',
+  'List organizations',
+  {
+    chainId: chainIdSchema,
+    proposalType: z.number().optional().describe('Optional organization type filter.'),
+    skipCount: skipCountSchema,
+    maxResultCount: maxResultCountSchema,
+  },
+  network.networkOrganizationsList,
+);
+
+registerTool(
   'tomorrowdao_network_contract_name_check',
+  'Check network contract name availability',
   {
-    description: 'Check network contract name availability',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      contractName: z.string(),
-    },
+    chainId: chainIdSchema,
+    contractName: z.string().min(1).describe('Contract name to check.'),
   },
-  async (input) => format(await network.networkContractNameCheck(input)),
+  network.networkContractNameCheck,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_network_contract_name_add',
+  'Add network contract name (auth required)',
   {
-    description: 'Add network contract name (auth required)',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      operateChainId: z.enum(['AELF', 'tDVV']),
-      contractName: z.string(),
-      txId: z.string(),
-      action: z.number(),
-      address: z.string(),
-      proposalId: z.string().optional(),
-      createAt: z.string().optional(),
-    },
+    chainId: chainIdSchema,
+    operateChainId: z.enum(['AELF', 'tDVV']).describe('Operating chain id.'),
+    contractName: z.string().min(1),
+    txId: z.string().min(1).describe('Deployment tx id.'),
+    action: z.number().describe('Action code from backend API.'),
+    address: addressSchema,
+    proposalId: z.string().optional(),
+    createAt: z.string().optional(),
   },
-  async (input) => format(await network.networkContractNameAdd(input)),
+  network.networkContractNameAdd,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_network_contract_name_update',
+  'Update network contract name (auth required)',
   {
-    description: 'Update network contract name (auth required)',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      operateChainId: z.enum(['AELF', 'tDVV']).optional(),
-      contractName: z.string(),
-      address: z.string(),
-      contractAddress: z.string(),
-      caHash: z.string().optional(),
-    },
+    chainId: chainIdSchema,
+    operateChainId: z.enum(['AELF', 'tDVV']).optional(),
+    contractName: z.string().min(1),
+    address: addressSchema,
+    contractAddress: z.string().min(1).describe('Target contract address.'),
+    caHash: z.string().optional(),
   },
-  async (input) => format(await network.networkContractNameUpdate(input)),
+  network.networkContractNameUpdate,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_network_contract_flow_start',
+  'Start network contract proposal flow',
   {
-    description: 'Start network contract proposal flow',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      action: z.enum(['ProposeNewContract', 'ProposeUpdateContract', 'DeployUserSmartContract', 'UpdateUserSmartContract']),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    action: z
+      .enum(['ProposeNewContract', 'ProposeUpdateContract', 'DeployUserSmartContract', 'UpdateUserSmartContract'])
+      .describe('Genesis contract method to start flow.'),
+    args: contractArgsSchema('{"category":0,"code":"base64/hex code"}'),
+    mode: modeSchema,
   },
-  async (input) => format(await network.networkContractFlowStart(input)),
+  network.networkContractFlowStart,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_network_contract_flow_release',
+  'Release approved/code-checked contract proposal',
   {
-    description: 'Release approved/code-checked contract proposal',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      methodName: z.enum(['ReleaseApprovedContract', 'ReleaseCodeCheckedContract']),
-      proposalId: z.string(),
-      proposedContractInputHash: z.string(),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    methodName: z
+      .enum(['ReleaseApprovedContract', 'ReleaseCodeCheckedContract'])
+      .describe('Release method on genesis contract.'),
+    proposalId: z.string().min(1),
+    proposedContractInputHash: z.string().min(1),
+    mode: modeSchema,
   },
-  async (input) => format(await network.networkContractFlowRelease(input)),
+  network.networkContractFlowRelease,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_network_contract_flow_status',
+  'Query contract proposal flow status',
   {
-    description: 'Query contract proposal flow status',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      proposalId: z.string().optional(),
-      codeHash: z.string().optional(),
-    },
+    chainId: chainIdSchema,
+    proposalId: z.string().optional(),
+    codeHash: z.string().optional(),
   },
-  async (input) => format(await network.networkContractFlowStatus(input)),
+  network.networkContractFlowStatus,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_bp_apply',
+  'Apply to become BP candidate',
   {
-    description: 'Apply to become BP candidate',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: contractArgsSchema('{"value":10000000000}'),
+    mode: modeSchema,
   },
-  async (input) => format(await bp.bpApply(input)),
+  bp.bpApply,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_bp_quit',
+  'Quit BP election',
   {
-    description: 'Quit BP election',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: contractArgsSchema('{"value":true}'),
+    mode: modeSchema,
   },
-  async (input) => format(await bp.bpQuit(input)),
+  bp.bpQuit,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_bp_vote',
+  'Vote for BP candidate',
   {
-    description: 'Vote for BP candidate',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: bpVoteArgsSchema,
+    mode: modeSchema,
   },
-  async (input) => format(await bp.bpVote(input)),
+  bp.bpVote,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_bp_withdraw',
+  'Withdraw BP votes',
   {
-    description: 'Withdraw BP votes',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.any(),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: bpWithdrawArgsSchema,
+    mode: modeSchema,
   },
-  async (input) => format(await bp.bpWithdraw(input)),
+  bp.bpWithdraw,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_bp_change_vote',
+  'Change BP voting option',
   {
-    description: 'Change BP voting option',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: bpChangeVoteArgsSchema,
+    mode: modeSchema,
   },
-  async (input) => format(await bp.bpChangeVote(input)),
+  bp.bpChangeVote,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_bp_claim_profits',
+  'Claim BP profits',
   {
-    description: 'Claim BP profits',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      args: z.record(z.any()),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    args: contractArgsSchema('{"schemeId":"..."}'),
+    mode: modeSchema,
   },
-  async (input) => format(await bp.bpClaimProfits(input)),
+  bp.bpClaimProfits,
 );
 
-server.registerTool(
+registerTool(
+  'tomorrowdao_bp_votes_list',
+  'List BP votes',
+  {
+    chainId: chainIdSchema,
+    skipCount: skipCountSchema,
+    maxResultCount: maxResultCountSchema,
+  },
+  bp.bpVotesList,
+);
+
+registerTool(
+  'tomorrowdao_bp_team_desc_get',
+  'Get BP team description by public key',
+  {
+    chainId: chainIdSchema,
+    publicKey: z.string().min(1).describe('BP node public key.'),
+  },
+  bp.bpTeamDescGet,
+);
+
+registerTool(
+  'tomorrowdao_bp_team_desc_list',
+  'List all BP team descriptions',
+  {
+    chainId: chainIdSchema,
+  },
+  bp.bpTeamDescList,
+);
+
+registerTool(
   'tomorrowdao_bp_team_desc_add',
+  'Add BP team description (auth required)',
   {
-    description: 'Add BP team description (auth required)',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      publicKey: z.string(),
-      address: z.string(),
-      name: z.string(),
-      avatar: z.string().optional(),
-      intro: z.string().optional(),
-      txId: z.string().optional(),
-      isActive: z.boolean().optional(),
-      socials: z.array(z.string()).optional(),
-      officialWebsite: z.string().optional(),
-      location: z.string().optional(),
-      mail: z.string().optional(),
-      updateTime: z.string().optional(),
-    },
+    chainId: chainIdSchema,
+    publicKey: z.string().min(1),
+    address: addressSchema,
+    name: z.string().min(1),
+    avatar: z.string().optional(),
+    intro: z.string().optional(),
+    txId: z.string().optional(),
+    isActive: z.boolean().optional(),
+    socials: z.array(z.string()).optional(),
+    officialWebsite: z.string().optional(),
+    location: z.string().optional(),
+    mail: z.string().optional(),
+    updateTime: z.string().optional(),
   },
-  async (input) => format(await bp.bpTeamDescAdd(input)),
+  bp.bpTeamDescAdd,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_bp_vote_reclaim',
+  'Update BP vote reclaim status (auth required)',
   {
-    description: 'Update BP vote reclaim status (auth required)',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      voteId: z.string(),
-      proposalId: z.string().optional(),
-    },
+    chainId: chainIdSchema,
+    voteId: z.string().min(1),
+    proposalId: z.string().optional(),
   },
-  async (input) => format(await bp.bpVoteReclaim(input)),
+  bp.bpVoteReclaim,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_resource_buy',
+  'Buy resource token',
   {
-    description: 'Buy resource token',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      symbol: z.string(),
-      amount: z.number(),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    symbol: z.string().min(1),
+    amount: z.number().positive().describe('Trade amount in token minimal unit.'),
+    mode: modeSchema,
   },
-  async (input) => format(await resource.resourceBuy(input)),
+  resource.resourceBuy,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_resource_sell',
+  'Sell resource token',
   {
-    description: 'Sell resource token',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      symbol: z.string(),
-      amount: z.number(),
-      mode: z.enum(['simulate', 'send']).default('simulate'),
-    },
+    chainId: chainIdSchema,
+    symbol: z.string().min(1),
+    amount: z.number().positive().describe('Trade amount in token minimal unit.'),
+    mode: modeSchema,
   },
-  async (input) => format(await resource.resourceSell(input)),
+  resource.resourceSell,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_resource_realtime_records',
+  'Get resource realtime records',
   {
-    description: 'Get resource realtime records',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      skipCount: z.number().optional(),
-      maxResultCount: z.number().optional(),
-    },
+    chainId: chainIdSchema,
+    skipCount: skipCountSchema,
+    maxResultCount: maxResultCountSchema,
   },
-  async (input) => format(await resource.resourceRealtimeRecords(input)),
+  resource.resourceRealtimeRecords,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_resource_turnover',
+  'Get resource turnover',
   {
-    description: 'Get resource turnover',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      symbol: z.string().optional(),
-    },
+    chainId: chainIdSchema,
+    symbol: z.string().optional(),
   },
-  async (input) => format(await resource.resourceTurnover(input)),
+  resource.resourceTurnover,
 );
 
-server.registerTool(
+registerTool(
   'tomorrowdao_resource_records',
+  'Get resource trading records',
   {
-    description: 'Get resource trading records',
-    inputSchema: {
-      chainId: z.enum(['AELF', 'tDVV']).optional(),
-      skipCount: z.number().optional(),
-      maxResultCount: z.number().optional(),
-      symbol: z.string().optional(),
-    },
+    chainId: chainIdSchema,
+    skipCount: skipCountSchema,
+    maxResultCount: maxResultCountSchema,
+    symbol: z.string().optional(),
   },
-  async (input) => format(await resource.resourceRecords(input)),
+  resource.resourceRecords,
 );
 
 const transport = new StdioServerTransport();

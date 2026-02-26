@@ -1,8 +1,8 @@
 import { CONTRACTS, getConfig, getTokenContractAddress } from '../core/config.js';
-import { fail, ok } from '../core/errors.js';
+import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { callSend, callView } from '../core/chain-client.js';
 import { apiGet, apiPost } from '../core/http.js';
-import type { ChainId, ExecutionMode, ToolResult } from '../core/types.js';
+import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
 
 export interface DaoCreateInput {
   chainId?: ChainId;
@@ -72,6 +72,7 @@ function daoChain(chainId?: ChainId): ChainId {
 
 export async function daoCreate(input: DaoCreateInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
@@ -90,6 +91,8 @@ export async function daoCreate(input: DaoCreateInput): Promise<ToolResult<unkno
 
 export async function daoUpdateMetadata(input: DaoUpdateMetadataInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.daoId, 'daoId');
+    requireField(input.metadata, 'metadata');
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
@@ -111,6 +114,10 @@ export async function daoUpdateMetadata(input: DaoUpdateMetadataInput): Promise<
 
 export async function daoUploadFiles(input: DaoUploadFilesInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.daoId, 'daoId');
+    if (!Array.isArray(input.files) || input.files.length === 0) {
+      throw new SkillError('INVALID_INPUT', 'files must be a non-empty array');
+    }
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
@@ -132,6 +139,10 @@ export async function daoUploadFiles(input: DaoUploadFilesInput): Promise<ToolRe
 
 export async function daoRemoveFiles(input: DaoRemoveFilesInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.daoId, 'daoId');
+    if (!Array.isArray(input.fileCids) || input.fileCids.length === 0) {
+      throw new SkillError('INVALID_INPUT', 'fileCids must be a non-empty array');
+    }
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
@@ -153,6 +164,8 @@ export async function daoRemoveFiles(input: DaoRemoveFilesInput): Promise<ToolRe
 
 export async function daoProposalCreate(input: DaoProposalCreateInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.methodName, 'methodName');
+    requireField(input.args, 'args');
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
@@ -171,6 +184,7 @@ export async function daoProposalCreate(input: DaoProposalCreateInput): Promise<
 
 export async function daoVote(input: DaoVoteInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
@@ -189,6 +203,7 @@ export async function daoVote(input: DaoVoteInput): Promise<ToolResult<unknown>>
 
 export async function daoWithdraw(input: DaoVoteInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
@@ -207,6 +222,7 @@ export async function daoWithdraw(input: DaoVoteInput): Promise<ToolResult<unkno
 
 export async function daoExecute(input: DaoExecuteInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.proposalId, 'proposalId');
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
@@ -223,9 +239,9 @@ export async function daoExecute(input: DaoExecuteInput): Promise<ToolResult<unk
   }
 }
 
-export async function discussionList(input: DiscussionListInput): Promise<ToolResult<unknown>> {
+export async function discussionList(input: DiscussionListInput): Promise<ToolResult<PagedResponse>> {
   try {
-    const data = await apiGet('/discussion/comment-list', {
+    const data = await apiGet<PagedResponse>('/discussion/comment-list', {
       chainId: input.chainId || daoChain(),
       proposalId: input.proposalId,
       alias: input.alias,
@@ -238,9 +254,10 @@ export async function discussionList(input: DiscussionListInput): Promise<ToolRe
   }
 }
 
-export async function discussionComment(input: DiscussionCommentInput): Promise<ToolResult<unknown>> {
+export async function discussionComment(input: DiscussionCommentInput): Promise<ToolResult<JsonObject>> {
   try {
-    const data = await apiPost('/discussion/new-comment', {
+    requireField(input.comment, 'comment');
+    const data = await apiPost<Record<string, unknown>, JsonObject>('/discussion/new-comment', {
       chainId: input.chainId || daoChain(),
       proposalId: input.proposalId,
       alias: input.alias,
@@ -258,9 +275,12 @@ export async function daoProposalMyInfo(params: {
   proposalId: string;
   address: string;
   daoId: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
-    const data = await apiGet('/proposal/my-info', {
+    requireField(params.proposalId, 'proposalId');
+    requireField(params.address, 'address');
+    requireField(params.daoId, 'daoId');
+    const data = await apiGet<JsonObject>('/proposal/my-info', {
       chainId: params.chainId || daoChain(),
       proposalId: params.proposalId,
       address: params.address,
@@ -277,8 +297,11 @@ export async function daoTokenAllowanceView(params: {
   symbol: string;
   owner: string;
   spender: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
+    requireField(params.symbol, 'symbol');
+    requireField(params.owner, 'owner');
+    requireField(params.spender, 'spender');
     const chainId = daoChain(params.chainId);
     const data = await callView({
       chainId,
@@ -290,7 +313,7 @@ export async function daoTokenAllowanceView(params: {
         spender: params.spender,
       },
     });
-    return ok(data);
+    return ok((data || {}) as JsonObject);
   } catch (err) {
     return fail(err);
   }

@@ -2,6 +2,26 @@ export type ChainId = 'AELF' | 'tDVV';
 
 export type ExecutionMode = 'simulate' | 'send';
 
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
+export interface JsonObject {
+  [key: string]: JsonValue | unknown;
+}
+
+export interface PagedResponse<T = JsonObject> extends JsonObject {
+  items?: T[];
+  totalCount?: number;
+  skipCount?: number;
+  maxResultCount?: number;
+}
+
+export interface ChainSimulatePayload extends JsonObject {
+  chainId: ChainId;
+  contractAddress: string;
+  methodName: string;
+  args?: unknown;
+}
+
 export interface EnvConfig {
   apiBase: string;
   authBase: string;
@@ -11,6 +31,11 @@ export interface EnvConfig {
   source: string;
   caHash?: string;
   privateKey?: string;
+  httpTimeoutMs: number;
+  httpRetryMax: number;
+  httpRetryBaseMs: number;
+  httpRetryPost: boolean;
+  aelfCacheMax: number;
   rpc: Record<ChainId, string>;
 }
 

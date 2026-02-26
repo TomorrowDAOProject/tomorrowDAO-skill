@@ -1,5 +1,5 @@
-import AElf from 'aelf-sdk';
 import { SkillError } from './errors.js';
+import * as aelfPool from './aelf-pool.js';
 
 export interface WaitTxOptions {
   pollMs?: number;
@@ -13,7 +13,7 @@ export async function waitForTxResult(
 ): Promise<{ status: string; raw: any }> {
   const pollMs = options?.pollMs ?? 1000;
   const maxAttempts = options?.maxAttempts ?? 30;
-  const instance = new AElf(new AElf.providers.HttpProvider(rpcUrl, 20_000));
+  const instance = aelfPool.getAelfByRpc(rpcUrl);
 
   for (let i = 0; i < maxAttempts; i += 1) {
     const result = await instance.chain.getTxResult(txId);

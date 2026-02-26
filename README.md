@@ -89,6 +89,12 @@ bun run bin/setup.ts list
 | `TMRW_CA_HASH` | No | — | Optional auth `ca_hash` |
 | `TMRW_RPC_AELF` | No | `https://aelf-public-node.aelf.io` | AELF RPC endpoint |
 | `TMRW_RPC_TDVV` | No | `https://tdvv-public-node.aelf.io` | tDVV RPC endpoint |
+| `TMRW_HTTP_TIMEOUT_MS` | No | `10000` | HTTP timeout in milliseconds |
+| `TMRW_HTTP_RETRY_MAX` | No | `1` | Max retry count for retryable HTTP requests |
+| `TMRW_HTTP_RETRY_BASE_MS` | No | `200` | Retry base backoff milliseconds |
+| `TMRW_HTTP_RETRY_POST` | No | `0` | Retry POST when set to `1/true` |
+| `TMRW_AELF_CACHE_MAX` | No | `8` | Max cached AElf client instances in long-lived process |
+| `TMRW_LOG_LEVEL` | No | `error` | Structured logger level (`error/warn/info/debug`) |
 
 ## Usage
 
@@ -152,23 +158,30 @@ const proposalRes = await networkProposalCreate({
 });
 ```
 
-## MCP Tools (31)
+## MCP Tools (41)
 
-### DAO (8)
+### DAO (12)
 - `tomorrowdao_dao_create`
 - `tomorrowdao_dao_update_metadata`
+- `tomorrowdao_dao_upload_files`
+- `tomorrowdao_dao_remove_files`
 - `tomorrowdao_dao_proposal_create`
 - `tomorrowdao_dao_vote`
 - `tomorrowdao_dao_withdraw`
 - `tomorrowdao_dao_execute`
 - `tomorrowdao_discussion_list`
 - `tomorrowdao_discussion_comment`
+- `tomorrowdao_dao_proposal_my_info`
+- `tomorrowdao_dao_token_allowance_view`
 
-### Network Governance (10)
+### Network Governance (13)
+- `tomorrowdao_network_proposals_list`
+- `tomorrowdao_network_proposal_get`
 - `tomorrowdao_network_proposal_create`
 - `tomorrowdao_network_proposal_vote`
 - `tomorrowdao_network_proposal_release`
 - `tomorrowdao_network_org_create`
+- `tomorrowdao_network_org_list`
 - `tomorrowdao_network_contract_name_check`
 - `tomorrowdao_network_contract_name_add`
 - `tomorrowdao_network_contract_name_update`
@@ -176,13 +189,16 @@ const proposalRes = await networkProposalCreate({
 - `tomorrowdao_network_contract_flow_release`
 - `tomorrowdao_network_contract_flow_status`
 
-### BP (8)
+### BP (11)
 - `tomorrowdao_bp_apply`
 - `tomorrowdao_bp_quit`
 - `tomorrowdao_bp_vote`
 - `tomorrowdao_bp_withdraw`
 - `tomorrowdao_bp_change_vote`
 - `tomorrowdao_bp_claim_profits`
+- `tomorrowdao_bp_votes_list`
+- `tomorrowdao_bp_team_desc_get`
+- `tomorrowdao_bp_team_desc_list`
 - `tomorrowdao_bp_team_desc_add`
 - `tomorrowdao_bp_vote_reclaim`
 
@@ -199,12 +215,29 @@ const proposalRes = await networkProposalCreate({
 - Network governance/BP/resource write operations are `AELF` only
 - DAO defaults to `tDVV` unless `chainId` is explicitly set
 
+## Contract Address Policy
+
+- DAO/Network system contract addresses in `src/core/config.ts` are intentionally hardcoded defaults.
+- This is a deliberate mainnet design choice confirmed by the team: these addresses are treated as long-term stable system contracts.
+- If testnet/devnet override is required in future, introduce it in a dedicated feature branch to avoid changing current mainnet behavior.
+
+## Compatibility Layer
+
+- `lib/*` files are compatibility re-exports for older import paths.
+- New integrations should prefer `index.ts` exports from package root.
+- Legacy helpers in `signature.ts` (`buildLegacyTimestampSignature`, `getAuthSigningMessage`) are kept as public backward-compatible APIs.
+
 ## Testing
 
 ```bash
 bun run test:unit
 bun run test:integration
 bun run test:e2e
+bun run test:coverage
+
+# coverage gate (src-only, default: lines>=80, funcs>=75)
+bun run test:coverage:gate
+COVERAGE_MIN_LINES=85 COVERAGE_MIN_FUNCS=80 bun run test:coverage:ci
 
 # run real read-only e2e against public APIs
 RUN_TMRW_E2E=1 bun run test:e2e

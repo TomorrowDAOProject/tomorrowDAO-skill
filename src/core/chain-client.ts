@@ -1,17 +1,20 @@
 import AElf from 'aelf-sdk';
 import { CONTRACTS, getConfig } from './config.js';
 import { SkillError } from './errors.js';
-import type { ChainCallInput, ExecutionMode, SendOptions, TxReceipt } from './types.js';
+import type {
+  ChainCallInput,
+  ChainSimulatePayload,
+  ExecutionMode,
+  JsonObject,
+  SendOptions,
+  TxReceipt,
+} from './types.js';
 import { getWalletByPrivateKey } from './signature.js';
 import { waitForTxResult } from './tx-waiter.js';
+import { clearAelfPool, getAelfByRpc } from './aelf-pool.js';
 
-const aelfCache = new Map<string, any>();
-
-function getAelf(rpcUrl: string): any {
-  if (!aelfCache.has(rpcUrl)) {
-    aelfCache.set(rpcUrl, new AElf(new AElf.providers.HttpProvider(rpcUrl, 20_000)));
-  }
-  return aelfCache.get(rpcUrl);
+export function clearAelfCache(): void {
+  clearAelfPool();
 }
 
 async function getContract(input: ChainCallInput, privateKey?: string): Promise<any> {
@@ -19,7 +22,7 @@ async function getContract(input: ChainCallInput, privateKey?: string): Promise<
   const rpc = config.rpc[input.chainId];
   if (!rpc) throw new SkillError('UNSUPPORTED_CHAIN', `No rpc configured for ${input.chainId}`);
 
-  const aelf = getAelf(rpc);
+  const aelf = getAelfByRpc(rpc);
   const wallet = privateKey ? getWalletByPrivateKey(privateKey) : AElf.wallet.createNewWallet();
   const contract = await aelf.chain.contractAt(input.contractAddress, wallet);
   return {
@@ -50,7 +53,7 @@ export async function callView(input: ChainCallInput): Promise<any> {
 export async function callSend(
   input: ChainCallInput,
   options?: SendOptions & { privateKey?: string },
-): Promise<{ tx?: TxReceipt; result?: unknown; simulated: boolean }> {
+): Promise<{ tx?: TxReceipt; result?: JsonObject | ChainSimulatePayload | unknown; simulated: boolean }> {
   const mode: ExecutionMode = options?.mode || 'simulate';
   if (mode === 'simulate') {
     return {
@@ -60,7 +63,7 @@ export async function callSend(
         contractAddress: input.contractAddress,
         methodName: input.methodName,
         args: input.args,
-      },
+      } as ChainSimulatePayload,
     };
   }
 

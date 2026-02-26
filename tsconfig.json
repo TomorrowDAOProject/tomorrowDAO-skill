@@ -19,6 +19,7 @@
     "src/**/*.ts",
     "lib/**/*.ts",
     "bin/**/*.ts",
+    "scripts/**/*.ts",
     "tests/**/*.ts"
   ]
 }

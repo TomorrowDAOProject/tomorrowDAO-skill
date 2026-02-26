@@ -12,7 +12,38 @@
         "dao",
         "create"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"metadata\":{\"name\":\"Demo DAO\"}}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_dao_update_metadata",
@@ -24,7 +55,163 @@
         "dao",
         "update-metadata"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "daoId": {
+            "type": "string",
+            "description": "DAO id"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Metadata object"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "daoId",
+          "metadata"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_dao_upload_files",
+      "description": "Upload DAO files.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "upload-files"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "daoId": {
+            "type": "string",
+            "description": "DAO id"
+          },
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "cid": {
+                  "type": "string",
+                  "description": "File CID"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "File name"
+                },
+                "url": {
+                  "type": "string",
+                  "description": "File URL"
+                }
+              },
+              "required": [
+                "cid",
+                "name",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "daoId",
+          "files"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_dao_remove_files",
+      "description": "Remove DAO files by CID.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "remove-files"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "daoId": {
+            "type": "string",
+            "description": "DAO id"
+          },
+          "fileCids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "daoId",
+          "fileCids"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_dao_proposal_create",
@@ -36,7 +223,47 @@
         "dao",
         "proposal-create"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "methodName": {
+            "type": "string",
+            "enum": [
+              "CreateTransferProposal",
+              "CreateProposal",
+              "CreateVetoProposal"
+            ]
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"proposalBasicInfo\":{\"proposalTitle\":\"Title\"}}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "methodName",
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_dao_vote",
@@ -48,7 +275,38 @@
         "dao",
         "vote"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"proposalId\":\"...\",\"voteOption\":1}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_dao_withdraw",
@@ -60,7 +318,38 @@
         "dao",
         "withdraw"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"proposalId\":\"...\",\"voteRecordId\":\"...\"}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_dao_execute",
@@ -72,7 +361,37 @@
         "dao",
         "execute"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "proposalId"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_discussion_list",
@@ -84,7 +403,38 @@
         "dao",
         "discussion-list"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "alias": {
+            "type": "string",
+            "description": "Alias"
+          },
+          "skipCount": {
+            "type": "number",
+            "description": "Skip"
+          },
+          "maxResultCount": {
+            "type": "number",
+            "description": "Page size"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_discussion_comment",
@@ -96,7 +446,198 @@
         "dao",
         "discussion-comment"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment text"
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "alias": {
+            "type": "string",
+            "description": "Alias"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent comment id"
+          }
+        },
+        "required": [
+          "comment"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_dao_proposal_my_info",
+      "description": "Get my proposal info (auth required).",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "proposal-my-info"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "address": {
+            "type": "string",
+            "description": "Address"
+          },
+          "daoId": {
+            "type": "string",
+            "description": "DAO id"
+          }
+        },
+        "required": [
+          "proposalId",
+          "address",
+          "daoId"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_dao_token_allowance_view",
+      "description": "Get DAO token allowance.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "token-allowance-view"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Owner address"
+          },
+          "spender": {
+            "type": "string",
+            "description": "Spender address"
+          }
+        },
+        "required": [
+          "symbol",
+          "owner",
+          "spender"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_network_proposals_list",
+      "description": "List network governance proposals.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "proposals-list"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "skipCount": {
+            "type": "number",
+            "description": "Skip"
+          },
+          "maxResultCount": {
+            "type": "number",
+            "description": "Page size"
+          },
+          "proposalType": {
+            "type": "number",
+            "description": "Proposal type filter"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_network_proposal_get",
+      "description": "Get network proposal detail.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "proposal-get"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          }
+        },
+        "required": [
+          "proposalId"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_proposal_create",
@@ -108,7 +649,47 @@
         "network",
         "proposal-create"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalType": {
+            "type": "string",
+            "enum": [
+              "Parliament",
+              "Association",
+              "Referendum"
+            ]
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"title\":\"...\"}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "proposalType",
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_proposal_vote",
@@ -120,7 +701,56 @@
         "network",
         "proposal-vote"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalType": {
+            "type": "string",
+            "enum": [
+              "Parliament",
+              "Association",
+              "Referendum"
+            ]
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "Approve",
+              "Reject",
+              "Abstain",
+              "Release"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "proposalType",
+          "proposalId",
+          "action"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_proposal_release",
@@ -132,7 +762,46 @@
         "network",
         "proposal-release"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalType": {
+            "type": "string",
+            "enum": [
+              "Parliament",
+              "Association",
+              "Referendum"
+            ]
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "proposalType",
+          "proposalId"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_org_create",
@@ -144,7 +813,86 @@
         "network",
         "org-create"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalType": {
+            "type": "string",
+            "enum": [
+              "Parliament",
+              "Association",
+              "Referendum"
+            ]
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"proposalReleaseThreshold\":{...}}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "proposalType",
+          "args"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_network_org_list",
+      "description": "List organizations.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "network",
+        "org-list"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalType": {
+            "type": "number",
+            "description": "Organization type filter"
+          },
+          "skipCount": {
+            "type": "number",
+            "description": "Skip"
+          },
+          "maxResultCount": {
+            "type": "number",
+            "description": "Page size"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_contract_name_check",
@@ -156,7 +904,28 @@
         "network",
         "contract-name-check"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "contractName": {
+            "type": "string",
+            "description": "Contract name"
+          }
+        },
+        "required": [
+          "contractName"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_contract_name_add",
@@ -168,7 +937,59 @@
         "network",
         "contract-name-add"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "operateChainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ]
+          },
+          "contractName": {
+            "type": "string",
+            "description": "Contract name"
+          },
+          "txId": {
+            "type": "string",
+            "description": "Tx id"
+          },
+          "action": {
+            "type": "number",
+            "description": "Action code"
+          },
+          "address": {
+            "type": "string",
+            "description": "Address"
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "createAt": {
+            "type": "string",
+            "description": "Create time"
+          }
+        },
+        "required": [
+          "operateChainId",
+          "contractName",
+          "txId",
+          "action",
+          "address"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_contract_name_update",
@@ -180,7 +1001,49 @@
         "network",
         "contract-name-update"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "operateChainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ]
+          },
+          "contractName": {
+            "type": "string",
+            "description": "Contract name"
+          },
+          "address": {
+            "type": "string",
+            "description": "Address"
+          },
+          "contractAddress": {
+            "type": "string",
+            "description": "Contract address"
+          },
+          "caHash": {
+            "type": "string",
+            "description": "CA hash"
+          }
+        },
+        "required": [
+          "contractName",
+          "address",
+          "contractAddress"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_contract_flow_start",
@@ -192,7 +1055,48 @@
         "network",
         "contract-flow-start"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "ProposeNewContract",
+              "ProposeUpdateContract",
+              "DeployUserSmartContract",
+              "UpdateUserSmartContract"
+            ]
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"category\":0,\"code\":\"...\"}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "action",
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_contract_flow_release",
@@ -204,7 +1108,50 @@
         "network",
         "contract-flow-release"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "methodName": {
+            "type": "string",
+            "enum": [
+              "ReleaseApprovedContract",
+              "ReleaseCodeCheckedContract"
+            ]
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "proposedContractInputHash": {
+            "type": "string",
+            "description": "Input hash"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "methodName",
+          "proposalId",
+          "proposedContractInputHash"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_network_contract_flow_status",
@@ -216,7 +1163,30 @@
         "network",
         "contract-flow-status"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          },
+          "codeHash": {
+            "type": "string",
+            "description": "Code hash"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_bp_apply",
@@ -228,7 +1198,38 @@
         "bp",
         "apply"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"value\":10000000000}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_bp_quit",
@@ -240,7 +1241,38 @@
         "bp",
         "quit"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"value\":true}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_bp_vote",
@@ -252,7 +1284,38 @@
         "bp",
         "vote"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"candidatePubkey\":\"...\",\"amount\":1000}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_bp_withdraw",
@@ -264,11 +1327,42 @@
         "bp",
         "withdraw"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"voteId\":\"...\"}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_bp_change_vote",
-      "description": "Change BP vote option.",
+      "description": "Change BP voting option.",
       "command": "bun",
       "args": [
         "run",
@@ -276,7 +1370,38 @@
         "bp",
         "change-vote"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"voteId\":\"...\",\"candidatePubkey\":\"...\"}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_bp_claim_profits",
@@ -288,7 +1413,133 @@
         "bp",
         "claim-profits"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contract args object. Example: {\"schemeId\":\"...\"}"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_bp_votes_list",
+      "description": "List BP votes.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "votes-list"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "skipCount": {
+            "type": "number",
+            "description": "Skip"
+          },
+          "maxResultCount": {
+            "type": "number",
+            "description": "Page size"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_bp_team_desc_get",
+      "description": "Get BP team description.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "team-desc-get"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "BP public key"
+          }
+        },
+        "required": [
+          "publicKey"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_bp_team_desc_list",
+      "description": "List all BP team descriptions.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "bp",
+        "team-desc-list"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_bp_team_desc_add",
@@ -300,7 +1551,75 @@
         "bp",
         "team-desc-add"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "Public key"
+          },
+          "address": {
+            "type": "string",
+            "description": "Address"
+          },
+          "name": {
+            "type": "string",
+            "description": "Team name"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "Avatar URL"
+          },
+          "intro": {
+            "type": "string",
+            "description": "Intro"
+          },
+          "txId": {
+            "type": "string",
+            "description": "Tx id"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "socials": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "officialWebsite": {
+            "type": "string",
+            "description": "Official website"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location"
+          },
+          "mail": {
+            "type": "string",
+            "description": "Email"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "Update time"
+          }
+        },
+        "required": [
+          "publicKey",
+          "address",
+          "name"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_bp_vote_reclaim",
@@ -312,7 +1631,32 @@
         "bp",
         "vote-reclaim"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "voteId": {
+            "type": "string",
+            "description": "Vote id"
+          },
+          "proposalId": {
+            "type": "string",
+            "description": "Proposal id"
+          }
+        },
+        "required": [
+          "voteId"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_resource_buy",
@@ -324,7 +1668,42 @@
         "resource",
         "buy"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Resource symbol"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "symbol",
+          "amount"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_resource_sell",
@@ -336,7 +1715,42 @@
         "resource",
         "sell"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Resource symbol"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "default": "simulate",
+            "description": "simulate: dry-run, send: broadcast tx"
+          }
+        },
+        "required": [
+          "symbol",
+          "amount"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_resource_realtime_records",
@@ -348,7 +1762,30 @@
         "resource",
         "realtime-records"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "skipCount": {
+            "type": "number",
+            "description": "Skip"
+          },
+          "maxResultCount": {
+            "type": "number",
+            "description": "Page size"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_resource_turnover",
@@ -360,11 +1797,30 @@
         "resource",
         "turnover"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Resource symbol"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
     },
     {
       "name": "tomorrowdao_resource_records",
-      "description": "Get resource records.",
+      "description": "Get resource trading records.",
       "command": "bun",
       "args": [
         "run",
@@ -372,7 +1828,34 @@
         "resource",
         "records"
       ],
-      "cwd": "."
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "skipCount": {
+            "type": "number",
+            "description": "Skip"
+          },
+          "maxResultCount": {
+            "type": "number",
+            "description": "Page size"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Resource symbol"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      }
     }
   ]
 }

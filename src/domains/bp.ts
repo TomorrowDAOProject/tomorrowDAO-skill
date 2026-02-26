@@ -1,15 +1,15 @@
 import { CONTRACTS, getConfig } from '../core/config.js';
 import { callSend } from '../core/chain-client.js';
-import { fail, ok } from '../core/errors.js';
+import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { apiGet, apiPost } from '../core/http.js';
-import type { ChainId, ExecutionMode, ToolResult } from '../core/types.js';
+import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
 
 function bpChain(chainId?: ChainId): ChainId {
   return chainId || getConfig().defaultNetworkChain;
 }
 
 function ensureAelf(chainId: ChainId): ChainId {
-  if (chainId !== 'AELF') throw new Error(`bp domain only supports AELF, got ${chainId}`);
+  if (chainId !== 'AELF') throw new SkillError('UNSUPPORTED_CHAIN', `bp domain only supports AELF, got ${chainId}`);
   return chainId;
 }
 
@@ -19,6 +19,7 @@ export async function bpApply(input: {
   mode?: ExecutionMode;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
     const result = await callSend(
       {
@@ -41,6 +42,7 @@ export async function bpQuit(input: {
   mode?: ExecutionMode;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
     const result = await callSend(
       {
@@ -63,6 +65,7 @@ export async function bpVote(input: {
   mode?: ExecutionMode;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
     const result = await callSend(
       {
@@ -85,6 +88,7 @@ export async function bpWithdraw(input: {
   mode?: ExecutionMode;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
     const result = await callSend(
       {
@@ -107,6 +111,7 @@ export async function bpChangeVote(input: {
   mode?: ExecutionMode;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
     const result = await callSend(
       {
@@ -129,6 +134,7 @@ export async function bpClaimProfits(input: {
   mode?: ExecutionMode;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
     const result = await callSend(
       {
@@ -149,9 +155,9 @@ export async function bpVotesList(input: {
   chainId?: ChainId;
   skipCount?: number;
   maxResultCount?: number;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<PagedResponse>> {
   try {
-    const data = await apiGet('/networkdao/votes', {
+    const data = await apiGet<PagedResponse>('/networkdao/votes', {
       chainId: bpChain(input.chainId),
       skipCount: input.skipCount || 0,
       maxResultCount: input.maxResultCount || 20,
@@ -165,9 +171,10 @@ export async function bpVotesList(input: {
 export async function bpTeamDescGet(input: {
   chainId?: ChainId;
   publicKey: string;
-}): Promise<ToolResult<unknown>> {
+}): Promise<ToolResult<JsonObject>> {
   try {
-    const data = await apiGet('/networkdao/vote/getTeamDesc', {
+    requireField(input.publicKey, 'publicKey');
+    const data = await apiGet<JsonObject>('/networkdao/vote/getTeamDesc', {
       chainId: bpChain(input.chainId),
       publicKey: input.publicKey,
     });
@@ -177,9 +184,9 @@ export async function bpTeamDescGet(input: {
   }
 }
 
-export async function bpTeamDescList(input: { chainId?: ChainId }): Promise<ToolResult<unknown>> {
+export async function bpTeamDescList(input: { chainId?: ChainId }): Promise<ToolResult<PagedResponse>> {
   try {
-    const data = await apiGet('/networkdao/vote/getAllTeamDesc', {
+    const data = await apiGet<PagedResponse>('/networkdao/vote/getAllTeamDesc', {
       chainId: bpChain(input.chainId),
     });
     return ok(data);
@@ -204,6 +211,9 @@ export async function bpTeamDescAdd(input: {
   updateTime?: string;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.publicKey, 'publicKey');
+    requireField(input.address, 'address');
+    requireField(input.name, 'name');
     const data = await apiPost(
       '/networkdao/vote/addTeamDesc',
       {
@@ -235,6 +245,7 @@ export async function bpVoteReclaim(input: {
   proposalId?: string;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.voteId, 'voteId');
     const data = await apiPost(
       '/networkdao/vote/reclaim',
       {

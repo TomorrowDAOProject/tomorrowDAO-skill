@@ -43,6 +43,11 @@ export function buildSignaturePayload(privateKey: string, timestamp = Date.now()
   };
 }
 
+/**
+ * @public
+ * @legacy
+ * Kept for legacy SDK consumers that still sign raw timestamp payloads.
+ */
 export function buildLegacyTimestampSignature(privateKey: string, timestamp: number): SignaturePayload {
   const wallet = getWalletByPrivateKey(privateKey);
   const signature = toSignatureHex(privateKey.replace(/^0x/, ''), String(timestamp));
@@ -55,6 +60,11 @@ export function buildLegacyTimestampSignature(privateKey: string, timestamp: num
   };
 }
 
+/**
+ * @public
+ * @legacy
+ * Kept for SDK consumers that need the client-side auth prompt message.
+ */
 export function getAuthSigningMessage(address: string, timestamp: number): string {
   return `${SIGN_TEXT_PREFIX}${address}-${timestamp}`;
 }
