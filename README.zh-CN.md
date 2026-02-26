@@ -89,6 +89,12 @@ bun run bin/setup.ts list
 | `TMRW_CA_HASH` | 否 | — | 可选鉴权 `ca_hash` |
 | `TMRW_RPC_AELF` | 否 | `https://aelf-public-node.aelf.io` | AELF RPC |
 | `TMRW_RPC_TDVV` | 否 | `https://tdvv-public-node.aelf.io` | tDVV RPC |
+| `TMRW_HTTP_TIMEOUT_MS` | 否 | `10000` | HTTP 超时时间（毫秒） |
+| `TMRW_HTTP_RETRY_MAX` | 否 | `1` | 可重试请求的最大重试次数 |
+| `TMRW_HTTP_RETRY_BASE_MS` | 否 | `200` | 重试指数退避基础间隔（毫秒） |
+| `TMRW_HTTP_RETRY_POST` | 否 | `0` | 设为 `1/true` 时允许 POST 自动重试 |
+| `TMRW_AELF_CACHE_MAX` | 否 | `8` | 长生命周期进程中 AElf 客户端缓存上限 |
+| `TMRW_LOG_LEVEL` | 否 | `error` | 结构化日志级别（`error/warn/info/debug`） |
 
 ## 使用示例
 
@@ -152,23 +158,30 @@ const proposalRes = await networkProposalCreate({
 });
 ```
 
-## MCP 工具（共 31 个）
+## MCP 工具（共 41 个）
 
-### DAO（8）
+### DAO（12）
 - `tomorrowdao_dao_create`
 - `tomorrowdao_dao_update_metadata`
+- `tomorrowdao_dao_upload_files`
+- `tomorrowdao_dao_remove_files`
 - `tomorrowdao_dao_proposal_create`
 - `tomorrowdao_dao_vote`
 - `tomorrowdao_dao_withdraw`
 - `tomorrowdao_dao_execute`
 - `tomorrowdao_discussion_list`
 - `tomorrowdao_discussion_comment`
+- `tomorrowdao_dao_proposal_my_info`
+- `tomorrowdao_dao_token_allowance_view`
 
-### Network Governance（10）
+### Network Governance（13）
+- `tomorrowdao_network_proposals_list`
+- `tomorrowdao_network_proposal_get`
 - `tomorrowdao_network_proposal_create`
 - `tomorrowdao_network_proposal_vote`
 - `tomorrowdao_network_proposal_release`
 - `tomorrowdao_network_org_create`
+- `tomorrowdao_network_org_list`
 - `tomorrowdao_network_contract_name_check`
 - `tomorrowdao_network_contract_name_add`
 - `tomorrowdao_network_contract_name_update`
@@ -176,13 +189,16 @@ const proposalRes = await networkProposalCreate({
 - `tomorrowdao_network_contract_flow_release`
 - `tomorrowdao_network_contract_flow_status`
 
-### BP（8）
+### BP（11）
 - `tomorrowdao_bp_apply`
 - `tomorrowdao_bp_quit`
 - `tomorrowdao_bp_vote`
 - `tomorrowdao_bp_withdraw`
 - `tomorrowdao_bp_change_vote`
 - `tomorrowdao_bp_claim_profits`
+- `tomorrowdao_bp_votes_list`
+- `tomorrowdao_bp_team_desc_get`
+- `tomorrowdao_bp_team_desc_list`
 - `tomorrowdao_bp_team_desc_add`
 - `tomorrowdao_bp_vote_reclaim`
 
@@ -199,6 +215,12 @@ const proposalRes = await networkProposalCreate({
 - Network Governance / BP / Resource 的写操作仅支持 `AELF`
 - DAO 默认 `tDVV`，可显式传 `chainId`
 
+## 兼容层说明
+
+- `lib/*` 文件用于兼容旧版 import 路径（re-export）。
+- 新接入建议优先使用包根导出（`index.ts`）。
+- `signature.ts` 中 `buildLegacyTimestampSignature`、`getAuthSigningMessage` 保留为公开兼容 API（legacy）。
+
 ## 测试
 
 ```bash
@@ -207,9 +229,9 @@ bun run test:integration
 bun run test:e2e
 bun run test:coverage
 
-# 覆盖率门禁（默认：lines>=65, funcs>=60）
+# 覆盖率门禁（仅统计 src/**，默认：lines>=80, funcs>=75）
 bun run test:coverage:gate
-COVERAGE_MIN_LINES=70 COVERAGE_MIN_FUNCS=65 bun run test:coverage:ci
+COVERAGE_MIN_LINES=85 COVERAGE_MIN_FUNCS=80 bun run test:coverage:ci
 
 # 真实只读 e2e（公网 API）
 RUN_TMRW_E2E=1 bun run test:e2e

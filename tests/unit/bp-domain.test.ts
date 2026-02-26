@@ -109,5 +109,18 @@ describe('bp domain', () => {
   test('rejects non-AELF chain', async () => {
     const result = await bpApply({ chainId: 'tDVV', args: { value: 1 }, mode: 'simulate' });
     expect(result.success).toBeFalse();
+    expect(result.error?.code).toBe('UNSUPPORTED_CHAIN');
+  });
+
+  test('returns INVALID_INPUT when required fields are missing', async () => {
+    const team = await bpTeamDescAdd({
+      chainId: 'AELF',
+      publicKey: '',
+      address: '',
+      name: '',
+    } as any);
+
+    expect(team.success).toBeFalse();
+    expect(team.error?.code).toBe('INVALID_INPUT');
   });
 });

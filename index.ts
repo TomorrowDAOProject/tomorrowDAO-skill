@@ -4,9 +4,10 @@ export * from './src/core/types.js';
 export { getConfig, resetConfigCache, CONTRACTS, getProposalContractAddress } from './src/core/config.js';
 export { getAccessToken, clearTokenCache } from './src/core/auth.js';
 export { apiGet, apiPost } from './src/core/http.js';
-export { callView, callSend, packInput } from './src/core/chain-client.js';
+export { callView, callSend, packInput, clearAelfCache } from './src/core/chain-client.js';
 export { waitForTxResult } from './src/core/tx-waiter.js';
 export { SkillError } from './src/core/errors.js';
+export { log, logError, newTraceId } from './src/core/logger.js';
 
 // DAO
 export {

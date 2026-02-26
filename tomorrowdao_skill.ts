@@ -41,6 +41,8 @@ addMode(addInput(daoCmd.command('withdraw')).action(withInput(dao.daoWithdraw)))
 addMode(addInput(daoCmd.command('execute')).action(withInput(dao.daoExecute)));
 addInput(daoCmd.command('discussion-list')).action(withInput(dao.discussionList));
 addInput(daoCmd.command('discussion-comment')).action(withInput(dao.discussionComment));
+addInput(daoCmd.command('proposal-my-info')).action(withInput(dao.daoProposalMyInfo));
+addInput(daoCmd.command('token-allowance-view')).action(withInput(dao.daoTokenAllowanceView));
 
 const networkCmd = program.command('network').description('Network governance domain tools');
 addInput(networkCmd.command('proposals-list')).action(withInput(network.networkProposalsList));

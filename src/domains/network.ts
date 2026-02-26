@@ -5,7 +5,7 @@ import {
   type ProposalContractType,
 } from '../core/config.js';
 import { callSend, callView } from '../core/chain-client.js';
-import { fail, ok } from '../core/errors.js';
+import { fail, ok, requireField } from '../core/errors.js';
 import { apiGet, apiPost } from '../core/http.js';
 import type { ChainId, ExecutionMode, ToolResult } from '../core/types.js';
 
@@ -154,6 +154,7 @@ export async function networkProposalGet(params: {
   proposalId: string;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(params.proposalId, 'proposalId');
     const data = await apiGet('/networkdao/proposal/info', {
       chainId: networkChain(params.chainId),
       proposalId: params.proposalId,
@@ -166,6 +167,7 @@ export async function networkProposalGet(params: {
 
 export async function networkProposalCreate(input: NetworkProposalCreateInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     const chainId = ensureNetworkMainChain(networkChain(input.chainId));
     const contractAddress = getProposalContractAddress(chainId, input.proposalType);
     const result = await callSend(
@@ -185,6 +187,8 @@ export async function networkProposalCreate(input: NetworkProposalCreateInput): 
 
 export async function networkProposalVote(input: NetworkProposalVoteInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.proposalId, 'proposalId');
+    requireField(input.action, 'action');
     const chainId = ensureNetworkMainChain(networkChain(input.chainId));
     const contractAddress = getProposalContractAddress(chainId, input.proposalType);
     const result = await callSend(
@@ -213,6 +217,7 @@ export async function networkOrganizationCreate(
   input: NetworkOrganizationCreateInput,
 ): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.args, 'args');
     validateOrganizationThresholds(input);
     const chainId = ensureNetworkMainChain(networkChain(input.chainId));
     const contractAddress = getProposalContractAddress(chainId, input.proposalType);
@@ -255,6 +260,7 @@ export async function networkContractNameCheck(params: {
   contractName: string;
 }): Promise<ToolResult<unknown>> {
   try {
+    requireField(params.contractName, 'contractName');
     const data = await apiGet('/networkdao/contract/check', {
       chainId: networkChain(params.chainId),
       contractName: params.contractName,
@@ -267,6 +273,9 @@ export async function networkContractNameCheck(params: {
 
 export async function networkContractNameAdd(input: ContractNameAddInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.contractName, 'contractName');
+    requireField(input.txId, 'txId');
+    requireField(input.address, 'address');
     const data = await apiPost(
       '/networkdao/contract/add',
       {
@@ -289,6 +298,9 @@ export async function networkContractNameAdd(input: ContractNameAddInput): Promi
 
 export async function networkContractNameUpdate(input: ContractNameUpdateInput): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.contractName, 'contractName');
+    requireField(input.address, 'address');
+    requireField(input.contractAddress, 'contractAddress');
     const data = await apiPost(
       '/networkdao/contract/update',
       {
@@ -311,6 +323,8 @@ export async function networkContractFlowStart(
   input: ContractFlowStartInput,
 ): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.action, 'action');
+    requireField(input.args, 'args');
     const chainId = ensureNetworkMainChain(networkChain(input.chainId));
     const result = await callSend(
       {
@@ -331,6 +345,9 @@ export async function networkContractFlowRelease(
   input: ContractFlowReleaseInput,
 ): Promise<ToolResult<unknown>> {
   try {
+    requireField(input.methodName, 'methodName');
+    requireField(input.proposalId, 'proposalId');
+    requireField(input.proposedContractInputHash, 'proposedContractInputHash');
     const chainId = ensureNetworkMainChain(networkChain(input.chainId));
     const result = await callSend(
       {

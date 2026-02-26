@@ -80,5 +80,16 @@ describe('resource domain', () => {
     expect(apiFail.success).toBeFalse();
     expect(apiFail.error?.code).toBe('API_BUSINESS_ERROR');
     expect(chainFail.success).toBeFalse();
+    expect(chainFail.error?.code).toBe('UNSUPPORTED_CHAIN');
+  });
+
+  test('validates symbol and amount', async () => {
+    const invalidAmount = await resourceBuy({ chainId: 'AELF', symbol: 'CPU', amount: 0, mode: 'simulate' });
+    const invalidSymbol = await resourceSell({ chainId: 'AELF', symbol: '', amount: 1, mode: 'simulate' });
+
+    expect(invalidAmount.success).toBeFalse();
+    expect(invalidAmount.error?.code).toBe('INVALID_INPUT');
+    expect(invalidSymbol.success).toBeFalse();
+    expect(invalidSymbol.error?.code).toBe('INVALID_INPUT');
   });
 });

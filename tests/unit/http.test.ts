@@ -13,6 +13,10 @@ describe('http client', () => {
       TMRW_API_BASE: 'https://api.tmrwdao.com',
       TMRW_AUTH_BASE: 'https://api.tmrwdao.com',
       TMRW_PRIVATE_KEY: undefined,
+      TMRW_HTTP_TIMEOUT_MS: '100',
+      TMRW_HTTP_RETRY_MAX: '1',
+      TMRW_HTTP_RETRY_BASE_MS: '1',
+      TMRW_HTTP_RETRY_POST: '0',
     });
     clearTokenCache();
     resetConfigCache();
@@ -57,6 +61,10 @@ describe('http client', () => {
       TMRW_API_BASE: 'https://api.tmrwdao.com',
       TMRW_AUTH_BASE: 'https://api.tmrwdao.com',
       TMRW_PRIVATE_KEY: '1'.repeat(64),
+      TMRW_HTTP_TIMEOUT_MS: '100',
+      TMRW_HTTP_RETRY_MAX: '1',
+      TMRW_HTTP_RETRY_BASE_MS: '1',
+      TMRW_HTTP_RETRY_POST: '0',
     });
     resetConfigCache();
 
@@ -92,8 +100,93 @@ describe('http client', () => {
     expect(data.id).toBe('x-1');
   });
 
+  test('apiGet retries once on 5xx', async () => {
+    let count = 0;
+    const mocked = installFetchMock(() => {
+      count += 1;
+      if (count === 1) {
+        return textResponse('temporary error', 503);
+      }
+      return jsonResponse({ code: '20000', data: { ok: true } });
+    });
+    restoreFetch = mocked.restore;
+
+    const data = await apiGet<{ ok: boolean }>('/demo/retry');
+    expect(data.ok).toBeTrue();
+    expect(count).toBe(2);
+  });
+
+  test('apiPost does not retry by default', async () => {
+    resetTestEnv({
+      TMRW_API_BASE: 'https://api.tmrwdao.com',
+      TMRW_AUTH_BASE: 'https://api.tmrwdao.com',
+      TMRW_HTTP_TIMEOUT_MS: '100',
+      TMRW_HTTP_RETRY_MAX: '2',
+      TMRW_HTTP_RETRY_BASE_MS: '1',
+      TMRW_HTTP_RETRY_POST: '0',
+    });
+    resetConfigCache();
+
+    let count = 0;
+    const mocked = installFetchMock(() => {
+      count += 1;
+      return textResponse('post failed', 503);
+    });
+    restoreFetch = mocked.restore;
+
+    await expect(apiPost('/demo/no-retry', { x: 1 })).rejects.toMatchObject({
+      code: 'API_HTTP_ERROR',
+    });
+    expect(count).toBe(1);
+  });
+
+  test('apiPost retries when TMRW_HTTP_RETRY_POST=1', async () => {
+    resetTestEnv({
+      TMRW_API_BASE: 'https://api.tmrwdao.com',
+      TMRW_AUTH_BASE: 'https://api.tmrwdao.com',
+      TMRW_HTTP_TIMEOUT_MS: '100',
+      TMRW_HTTP_RETRY_MAX: '1',
+      TMRW_HTTP_RETRY_BASE_MS: '1',
+      TMRW_HTTP_RETRY_POST: '1',
+    });
+    resetConfigCache();
+
+    let count = 0;
+    const mocked = installFetchMock(() => {
+      count += 1;
+      if (count === 1) {
+        return textResponse('temporary post failure', 503);
+      }
+      return jsonResponse({ code: '20000', data: { id: 'post-ok' } });
+    });
+    restoreFetch = mocked.restore;
+
+    const data = await apiPost<{ x: number }, { id: string }>('/demo/retry-post', { x: 1 });
+    expect(data.id).toBe('post-ok');
+    expect(count).toBe(2);
+  });
+
+  test('apiGet throws timeout as API_HTTP_ERROR', async () => {
+    resetTestEnv({
+      TMRW_API_BASE: 'https://api.tmrwdao.com',
+      TMRW_AUTH_BASE: 'https://api.tmrwdao.com',
+      TMRW_HTTP_TIMEOUT_MS: '5',
+      TMRW_HTTP_RETRY_MAX: '0',
+      TMRW_HTTP_RETRY_BASE_MS: '1',
+      TMRW_HTTP_RETRY_POST: '0',
+    });
+    resetConfigCache();
+
+    const mocked = installFetchMock(() => new Promise<Response>(() => undefined));
+    restoreFetch = mocked.restore;
+
+    await expect(apiGet('/demo/timeout')).rejects.toMatchObject({
+      code: 'API_HTTP_ERROR',
+    });
+  });
+
   test('apiGet throws API_HTTP_ERROR on non-2xx', async () => {
-    const mocked = installFetchMock(() => textResponse('down', 503));
+    const mocked = installFetchMock(() => textResponse('down', 404));
     restoreFetch = mocked.restore;
 
     await expect(apiGet('/demo/fail')).rejects.toMatchObject({

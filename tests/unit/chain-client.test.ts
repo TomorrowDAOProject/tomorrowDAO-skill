@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { resetConfigCache } from '../../src/core/config.js';
-import { callSend, callView, packInput } from '../../src/core/chain-client.js';
+import { callSend, callView, clearAelfCache, packInput } from '../../src/core/chain-client.js';
 import { restoreTestEnv, resetTestEnv } from '../helpers/env.js';
 
 describe('chain client', () => {
@@ -87,5 +87,9 @@ describe('chain client', () => {
     await expect(packInput('UNKNOWN' as any, 'contract-1', 'Vote', {})).rejects.toMatchObject({
       code: 'UNSUPPORTED_CHAIN',
     });
+  });
+
+  test('clearAelfCache is callable for long-lived process cleanup', () => {
+    expect(() => clearAelfCache()).not.toThrow();
   });
 });

@@ -79,6 +79,38 @@ describe('auth', () => {
     expect(mocked.calls.length).toBe(2);
   });
 
+  test('force refresh failure clears stale cache', async () => {
+    resetTestEnv({ TMRW_PRIVATE_KEY: '1'.repeat(64) });
+    resetConfigCache();
+
+    let call = 0;
+    const mocked = installFetchMock(() => {
+      call += 1;
+      if (call === 1) {
+        return jsonResponse({
+          access_token: 'token-ok',
+          token_type: 'Bearer',
+          expires_in: 120,
+        });
+      }
+      return textResponse('upstream failed', 500);
+    });
+    restoreFetch = mocked.restore;
+
+    const first = await getAccessToken();
+    expect(first.accessToken).toBe('token-ok');
+
+    await expect(getAccessToken(true)).rejects.toMatchObject({
+      code: 'AUTH_HTTP_ERROR',
+    });
+
+    // After failed refresh, next call should fetch again instead of using stale cache.
+    await expect(getAccessToken()).rejects.toMatchObject({
+      code: 'AUTH_HTTP_ERROR',
+    });
+    expect(call).toBe(3);
+  });
+
   test('returns AUTH_HTTP_ERROR on non-2xx response', async () => {
     resetTestEnv({ TMRW_PRIVATE_KEY: '1'.repeat(64) });
     resetConfigCache();

@@ -228,4 +228,23 @@ describe('network domain', () => {
     expect(invalidParliamentRatio.success).toBeFalse();
     expect(invalidAssociationMembers.success).toBeFalse();
   });
+
+  test('validates required network inputs', async () => {
+    const proposalGet = await networkProposalGet({ chainId: 'AELF', proposalId: '' });
+    const nameCheck = await networkContractNameCheck({ chainId: 'AELF', contractName: '' });
+    const flowRelease = await networkContractFlowRelease({
+      chainId: 'AELF',
+      methodName: 'ReleaseApprovedContract',
+      proposalId: '',
+      proposedContractInputHash: '',
+      mode: 'simulate',
+    });
+
+    expect(proposalGet.success).toBeFalse();
+    expect(proposalGet.error?.code).toBe('INVALID_INPUT');
+    expect(nameCheck.success).toBeFalse();
+    expect(nameCheck.error?.code).toBe('INVALID_INPUT');
+    expect(flowRelease.success).toBeFalse();
+    expect(flowRelease.error?.code).toBe('INVALID_INPUT');
+  });
 });

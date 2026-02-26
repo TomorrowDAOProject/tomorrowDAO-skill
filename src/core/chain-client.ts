@@ -1,17 +1,35 @@
 import AElf from 'aelf-sdk';
 import { CONTRACTS, getConfig } from './config.js';
 import { SkillError } from './errors.js';
-import type { ChainCallInput, ExecutionMode, SendOptions, TxReceipt } from './types.js';
+import type {
+  ChainCallInput,
+  ChainSimulatePayload,
+  ExecutionMode,
+  JsonObject,
+  SendOptions,
+  TxReceipt,
+} from './types.js';
 import { getWalletByPrivateKey } from './signature.js';
 import { waitForTxResult } from './tx-waiter.js';
 
 const aelfCache = new Map<string, any>();
 
 function getAelf(rpcUrl: string): any {
+  const cacheMax = Math.max(1, getConfig().aelfCacheMax || 1);
   if (!aelfCache.has(rpcUrl)) {
+    if (aelfCache.size >= cacheMax) {
+      const oldestKey = aelfCache.keys().next().value;
+      if (oldestKey) {
+        aelfCache.delete(oldestKey);
+      }
+    }
     aelfCache.set(rpcUrl, new AElf(new AElf.providers.HttpProvider(rpcUrl, 20_000)));
   }
   return aelfCache.get(rpcUrl);
+}
+
+export function clearAelfCache(): void {
+  aelfCache.clear();
 }
 
 async function getContract(input: ChainCallInput, privateKey?: string): Promise<any> {
@@ -50,7 +68,7 @@ export async function callView(input: ChainCallInput): Promise<any> {
 export async function callSend(
   input: ChainCallInput,
   options?: SendOptions & { privateKey?: string },
-): Promise<{ tx?: TxReceipt; result?: unknown; simulated: boolean }> {
+): Promise<{ tx?: TxReceipt; result?: JsonObject | ChainSimulatePayload | unknown; simulated: boolean }> {
   const mode: ExecutionMode = options?.mode || 'simulate';
   if (mode === 'simulate') {
     return {
@@ -60,7 +78,7 @@ export async function callSend(
         contractAddress: input.contractAddress,
         methodName: input.methodName,
         args: input.args,
-      },
+      } as ChainSimulatePayload,
     };
   }
 

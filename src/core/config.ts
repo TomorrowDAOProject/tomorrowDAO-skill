@@ -10,6 +10,11 @@ const DEFAULTS = {
   source: 'nightElf',
   rpcAELF: 'https://aelf-public-node.aelf.io',
   rpcTDVV: 'https://tdvv-public-node.aelf.io',
+  httpTimeoutMs: 10_000,
+  httpRetryMax: 1,
+  httpRetryBaseMs: 200,
+  httpRetryPost: false,
+  aelfCacheMax: 8,
 };
 
 let cached: EnvConfig | null = null;
@@ -23,6 +28,17 @@ function mustChain(value: string, field: string): ChainId {
 
 function trimSlash(url: string): string {
   return url.replace(/\/$/, '');
+}
+
+function readInt(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+  return Math.floor(parsed);
+}
+
+function readBool(value: string | undefined, fallback: boolean): boolean {
+  if (!value) return fallback;
+  return value === '1' || value.toLowerCase() === 'true';
 }
 
 export function getConfig(): EnvConfig {
@@ -43,6 +59,11 @@ export function getConfig(): EnvConfig {
     source: process.env.TMRW_SOURCE || DEFAULTS.source,
     caHash: process.env.TMRW_CA_HASH,
     privateKey: process.env.TMRW_PRIVATE_KEY,
+    httpTimeoutMs: readInt(process.env.TMRW_HTTP_TIMEOUT_MS, DEFAULTS.httpTimeoutMs),
+    httpRetryMax: readInt(process.env.TMRW_HTTP_RETRY_MAX, DEFAULTS.httpRetryMax),
+    httpRetryBaseMs: readInt(process.env.TMRW_HTTP_RETRY_BASE_MS, DEFAULTS.httpRetryBaseMs),
+    httpRetryPost: readBool(process.env.TMRW_HTTP_RETRY_POST, DEFAULTS.httpRetryPost),
+    aelfCacheMax: readInt(process.env.TMRW_AELF_CACHE_MAX, DEFAULTS.aelfCacheMax),
     rpc: {
       AELF: process.env.TMRW_RPC_AELF || DEFAULTS.rpcAELF,
       tDVV: process.env.TMRW_RPC_TDVV || DEFAULTS.rpcTDVV,

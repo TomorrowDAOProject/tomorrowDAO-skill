@@ -162,4 +162,14 @@ describe('dao domain', () => {
     expect(result.success).toBeFalse();
     expect(result.error?.code).toBe('UNSUPPORTED_CHAIN');
   });
+
+  test('validates required dao input fields', async () => {
+    const missingComment = await discussionComment({ chainId: 'tDVV', comment: '' });
+    const emptyFiles = await daoUploadFiles({ chainId: 'tDVV', daoId: 'dao-1', files: [], mode: 'simulate' });
+
+    expect(missingComment.success).toBeFalse();
+    expect(missingComment.error?.code).toBe('INVALID_INPUT');
+    expect(emptyFiles.success).toBeFalse();
+    expect(emptyFiles.error?.code).toBe('INVALID_INPUT');
+  });
 });
