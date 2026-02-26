@@ -27,6 +27,9 @@
     "LICENSE"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "setup": "bun run bin/setup.ts",
     "mcp": "bun run src/mcp/server.ts",
