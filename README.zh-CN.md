@@ -2,6 +2,9 @@
 
 [English](./README.md) | 中文
 
+[![Unit Tests](https://github.com/TomorrowDAOProject/tomorrowDAO-skill/actions/workflows/test.yml/badge.svg)](https://github.com/TomorrowDAOProject/tomorrowDAO-skill/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://TomorrowDAOProject.github.io/tomorrowDAO-skill/coverage.json)](https://TomorrowDAOProject.github.io/tomorrowDAO-skill/coverage.json)
+
 TomorrowDAO 的 AI Agent Skills 工具包，提供 **MCP + OpenClaw + CLI + SDK** 四种接入方式。
 
 ## 功能概览
@@ -137,6 +140,13 @@ bun run src/mcp/server.ts
     }
   }
 }
+```
+
+### OpenClaw
+
+```bash
+bun run build:openclaw
+bun run build:openclaw:check
 ```
 
 ### SDK

@@ -2,6 +2,9 @@
 
 [中文版](./README.zh-CN.md) | English
 
+[![Unit Tests](https://github.com/TomorrowDAOProject/tomorrowDAO-skill/actions/workflows/test.yml/badge.svg)](https://github.com/TomorrowDAOProject/tomorrowDAO-skill/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://TomorrowDAOProject.github.io/tomorrowDAO-skill/coverage.json)](https://TomorrowDAOProject.github.io/tomorrowDAO-skill/coverage.json)
+
 TomorrowDAO AI agent skill toolkit on aelf, with **MCP + OpenClaw + CLI + SDK** interfaces.
 
 ## Features
@@ -137,6 +140,13 @@ Use [mcp-config.example.json](./mcp-config.example.json) as template:
     }
   }
 }
+```
+
+### OpenClaw
+
+```bash
+bun run build:openclaw
+bun run build:openclaw:check
 ```
 
 ### SDK

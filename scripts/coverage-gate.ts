@@ -1,87 +1,109 @@
 #!/usr/bin/env bun
-import { spawnSync } from 'node:child_process';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const minLines = Number(process.env.COVERAGE_MIN_LINES || 80);
-const minFuncs = Number(process.env.COVERAGE_MIN_FUNCS || 75);
-const coverageDir = process.env.COVERAGE_DIR || '/tmp/tomorrowdao-skill-coverage';
-const lcovPath = path.join(coverageDir, 'lcov.info');
+type SectionTotals = {
+  linesFound: number;
+  linesHit: number;
+  funcsFound: number;
+  funcsHit: number;
+};
 
-const cmd = process.platform === 'win32' ? 'bun.cmd' : 'bun';
-const args = [
-  'test',
-  '--coverage',
-  '--coverage-reporter=lcov',
-  `--coverage-dir=${coverageDir}`,
-  'tests/unit/',
-  'tests/integration/',
-  'tests/e2e/',
-];
-
-const result = spawnSync(cmd, args, {
-  encoding: 'utf-8',
-  env: process.env,
-});
-
-const stdout = result.stdout || '';
-const stderr = result.stderr || '';
-process.stdout.write(stdout);
-process.stderr.write(stderr);
-
-if (result.status !== 0) {
-  process.exit(result.status ?? 1);
+function isSrcFile(sfPath: string): boolean {
+  const normalized = sfPath.replace(/\\/g, '/');
+  return normalized.startsWith('src/') || normalized.includes('/src/');
 }
 
-if (!fs.existsSync(lcovPath)) {
-  console.error(`Coverage gate failed: ${lcovPath} not found.`);
-  process.exit(1);
+function parseLcov(lcovText: string): SectionTotals {
+  const totals: SectionTotals = {
+    linesFound: 0,
+    linesHit: 0,
+    funcsFound: 0,
+    funcsHit: 0,
+  };
+
+  let currentFile = '';
+
+  for (const rawLine of lcovText.split('\n')) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    if (line.startsWith('SF:')) {
+      currentFile = line.slice(3);
+      continue;
+    }
+
+    if (!currentFile || !isSrcFile(currentFile)) {
+      continue;
+    }
+
+    if (line.startsWith('LF:')) {
+      totals.linesFound += Number(line.slice(3)) || 0;
+      continue;
+    }
+
+    if (line.startsWith('LH:')) {
+      totals.linesHit += Number(line.slice(3)) || 0;
+      continue;
+    }
+
+    if (line.startsWith('FNF:')) {
+      totals.funcsFound += Number(line.slice(4)) || 0;
+      continue;
+    }
+
+    if (line.startsWith('FNH:')) {
+      totals.funcsHit += Number(line.slice(4)) || 0;
+      continue;
+    }
+  }
+
+  return totals;
 }
 
-const text = fs.readFileSync(lcovPath, 'utf-8');
-const sections = text.split('end_of_record\n');
-
-let lf = 0;
-let lh = 0;
-let fnf = 0;
-let fnh = 0;
-
-for (const section of sections) {
-  const sfMatch = section.match(/^SF:(.+)$/m);
-  if (!sfMatch) continue;
-  const sourceFile = sfMatch[1].trim();
-
-  // Gate only on production source files.
-  if (!sourceFile.startsWith('src/')) continue;
-
-  const lfMatch = section.match(/^LF:(\d+)$/m);
-  const lhMatch = section.match(/^LH:(\d+)$/m);
-  const fnfMatch = section.match(/^FNF:(\d+)$/m);
-  const fnhMatch = section.match(/^FNH:(\d+)$/m);
-
-  lf += Number(lfMatch?.[1] || 0);
-  lh += Number(lhMatch?.[1] || 0);
-  fnf += Number(fnfMatch?.[1] || 0);
-  fnh += Number(fnhMatch?.[1] || 0);
+function percent(hit: number, found: number): number {
+  if (found <= 0) return 0;
+  return (hit / found) * 100;
 }
 
-if (lf === 0 || fnf === 0) {
-  console.error('Coverage gate failed: no src/** coverage data found in lcov report.');
-  process.exit(1);
+function main() {
+  const minLines = Number(process.env.COVERAGE_MIN_LINES || '85');
+  const minFuncs = Number(process.env.COVERAGE_MIN_FUNCS || '80');
+  const lcovFile = process.env.COVERAGE_LCOV_FILE || 'coverage/lcov.info';
+  const lcovPath = resolve(process.cwd(), lcovFile);
+
+  if (!existsSync(lcovPath)) {
+    console.error(`[coverage-gate] lcov file not found: ${lcovPath}`);
+    process.exit(1);
+  }
+
+  const lcov = readFileSync(lcovPath, 'utf8');
+  const totals = parseLcov(lcov);
+
+  if (totals.linesFound === 0 || totals.funcsFound === 0) {
+    console.error('[coverage-gate] no src/** lines/functions coverage data found');
+    process.exit(1);
+  }
+
+  const linePct = percent(totals.linesHit, totals.linesFound);
+  const funcPct = percent(totals.funcsHit, totals.funcsFound);
+
+  const failures: string[] = [];
+  if (linePct < minLines) {
+    failures.push(`lines ${linePct.toFixed(2)}% < ${minLines}%`);
+  }
+  if (funcPct < minFuncs) {
+    failures.push(`funcs ${funcPct.toFixed(2)}% < ${minFuncs}%`);
+  }
+
+  if (failures.length) {
+    console.error(`[coverage-gate] failed: ${failures.join(', ')}`);
+    process.exit(1);
+  }
+
+  console.log(
+    `[coverage-gate] passed: lines=${linePct.toFixed(2)}% funcs=${funcPct.toFixed(2)}% (threshold lines>=${minLines} funcs>=${minFuncs})`,
+  );
 }
 
-const linePct = (lh / lf) * 100;
-const funcPct = (fnh / fnf) * 100;
-
-const failures: string[] = [];
-if (linePct < minLines) failures.push(`lines ${linePct.toFixed(2)}% < ${minLines}%`);
-if (funcPct < minFuncs) failures.push(`funcs ${funcPct.toFixed(2)}% < ${minFuncs}%`);
-
-if (failures.length > 0) {
-  console.error(`Coverage gate failed: ${failures.join(', ')}`);
-  process.exit(1);
-}
-
-console.log(
-  `Coverage gate passed (src-only): funcs=${funcPct.toFixed(2)}%, lines=${linePct.toFixed(2)}%. thresholds: funcs>=${minFuncs} lines>=${minLines}`,
-);
+main();
