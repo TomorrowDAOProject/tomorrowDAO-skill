@@ -40,7 +40,12 @@
     "test:e2e": "bun test tests/e2e/",
     "test:coverage": "bun test --coverage --coverage-reporter=text tests/unit/ tests/integration/ tests/e2e/",
     "test:coverage:gate": "bun run scripts/coverage-gate.ts",
-    "test:coverage:ci": "COVERAGE_MIN_LINES=80 COVERAGE_MIN_FUNCS=75 bun run scripts/coverage-gate.ts"
+    "test:coverage:ci": "COVERAGE_MIN_LINES=85 COVERAGE_MIN_FUNCS=80 bun run test:unit:coverage && bun run coverage:gate",
+    "test:unit:coverage": "bun run test:unit --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage",
+    "coverage:gate": "bun run scripts/coverage-gate.ts",
+    "build:openclaw": "bun run bin/generate-openclaw.ts",
+    "build:openclaw:check": "bun run bin/generate-openclaw.ts --check",
+    "coverage:badge": "bun run bin/generate-coverage-badge.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
