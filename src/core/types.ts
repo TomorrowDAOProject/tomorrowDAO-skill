@@ -1,4 +1,4 @@
-export type ChainId = 'AELF' | 'tDVV';
+export type ChainId = 'AELF' | 'tDVV' | 'tDVW';
 
 export type ExecutionMode = 'simulate' | 'send';
 

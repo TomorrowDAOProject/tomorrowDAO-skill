@@ -45,7 +45,8 @@
     "coverage:gate": "bun run scripts/coverage-gate.ts",
     "build:openclaw": "bun run bin/generate-openclaw.ts",
     "build:openclaw:check": "bun run bin/generate-openclaw.ts --check",
-    "coverage:badge": "bun run bin/generate-coverage-badge.ts"
+    "coverage:badge": "bun run bin/generate-coverage-badge.ts",
+    "deps:check": "bun run scripts/check-deps-baseline.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",

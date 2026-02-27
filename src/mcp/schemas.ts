@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const chainIdSchema = z
-  .enum(['AELF', 'tDVV'])
+  .enum(['AELF', 'tDVV', 'tDVW'])
   .optional()
-  .describe('Chain id. Use AELF for network governance/BP/resource, tDVV for most DAO operations.');
+  .describe('Chain id. Use AELF for network governance/BP/resource, tDVV/tDVW for DAO operations.');
 
 export const modeSchema = z
   .enum(['simulate', 'send'])

@@ -338,7 +338,7 @@ registerTool(
   'Add network contract name (auth required)',
   {
     chainId: chainIdSchema,
-    operateChainId: z.enum(['AELF', 'tDVV']).describe('Operating chain id.'),
+    operateChainId: z.enum(['AELF', 'tDVV', 'tDVW']).describe('Operating chain id.'),
     contractName: z.string().min(1),
     txId: z.string().min(1).describe('Deployment tx id.'),
     action: z.number().describe('Action code from backend API.'),
@@ -354,7 +354,7 @@ registerTool(
   'Update network contract name (auth required)',
   {
     chainId: chainIdSchema,
-    operateChainId: z.enum(['AELF', 'tDVV']).optional(),
+    operateChainId: z.enum(['AELF', 'tDVV', 'tDVW']).optional(),
     contractName: z.string().min(1),
     address: addressSchema,
     contractAddress: z.string().min(1).describe('Target contract address.'),
