@@ -1,6 +1,6 @@
 {
   "name": "@tomorrowdao/agent-skills",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "TomorrowDAO AI agent skills toolkit with MCP, CLI, OpenClaw and SDK interfaces.",
   "type": "module",
   "main": "index.ts",
@@ -9,8 +9,8 @@
     "./mcp": "./src/mcp/server.ts"
   },
   "bin": {
-    "tomorrowdao-skill": "./tomorrowdao_skill.js",
-    "tomorrowdao-setup": "./bin/setup.js"
+    "tomorrowdao-skill": "tomorrowdao_skill.js",
+    "tomorrowdao-setup": "bin/setup.js"
   },
   "files": [
     "index.ts",
@@ -26,6 +26,14 @@
     "README.zh-CN.md",
     "LICENSE"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TomorrowDAOProject/tomorrowDAO-skill.git"
+  },
+  "homepage": "https://github.com/TomorrowDAOProject/tomorrowDAO-skill#readme",
+  "bugs": {
+    "url": "https://github.com/TomorrowDAOProject/tomorrowDAO-skill/issues"
+  },
   "license": "MIT",
   "publishConfig": {
     "access": "public"
