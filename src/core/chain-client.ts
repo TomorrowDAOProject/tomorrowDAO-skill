@@ -1,8 +1,9 @@
 import AElf from 'aelf-sdk';
-import { CONTRACTS, getConfig } from './config.js';
+import { getConfig, getContracts } from './config.js';
 import { SkillError } from './errors.js';
 import type {
   ChainCallInput,
+  ChainId,
   ChainSimulatePayload,
   ExecutionMode,
   JsonObject,
@@ -96,13 +97,13 @@ export async function callSend(
   return {
     simulated: false,
     result: raw,
-    tx: {
-      txId,
-      status,
-      logs,
-      explorerUrl: `${CONTRACTS.explorer[input.chainId]}/tx/${txId}`,
-    },
-  };
+      tx: {
+        txId,
+        status,
+        logs,
+        explorerUrl: `${getContracts().explorer[input.chainId]}/tx/${txId}`,
+      },
+    };
 }
 
 export async function packInput(
@@ -111,7 +112,7 @@ export async function packInput(
   methodName: string,
   args: unknown,
 ): Promise<string> {
-  const cid = chainId as 'AELF' | 'tDVV';
+  const cid = chainId as ChainId;
   const { contract } = await getContract({ chainId: cid, contractAddress, methodName, args });
   const method = getMethod(contract, methodName);
   if (typeof method.packInput !== 'function') {
