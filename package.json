@@ -1,6 +1,6 @@
 {
   "name": "@tomorrowdao/agent-skills",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TomorrowDAO AI agent skills toolkit with MCP, CLI, OpenClaw and SDK interfaces.",
   "type": "module",
   "main": "index.ts",
