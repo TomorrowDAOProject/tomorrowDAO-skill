@@ -13,6 +13,8 @@ import type {
 import { getWalletByPrivateKey } from './signature.js';
 import { waitForTxResult } from './tx-waiter.js';
 import { clearAelfPool, getAelfByRpc } from './aelf-pool.js';
+import { resolvePrivateKeyContext } from './signer-context.js';
+import type { SignerContextInput } from './wallet-context.js';
 
 export function clearAelfCache(): void {
   clearAelfPool();
@@ -53,7 +55,11 @@ export async function callView(input: ChainCallInput): Promise<any> {
 
 export async function callSend(
   input: ChainCallInput,
-  options?: SendOptions & { privateKey?: string },
+  options?: SendOptions & {
+    privateKey?: string;
+    signer?: SignerContextInput;
+    signerContext?: SignerContextInput;
+  },
 ): Promise<{ tx?: TxReceipt; result?: JsonObject | ChainSimulatePayload | unknown; simulated: boolean }> {
   const mode: ExecutionMode = options?.mode || 'simulate';
   if (mode === 'simulate') {
@@ -68,10 +74,13 @@ export async function callSend(
     };
   }
 
-  const privateKey = options?.privateKey || getConfig().privateKey;
-  if (!privateKey) {
-    throw new SkillError('SEND_PRIVATE_KEY_REQUIRED', 'TMRW_PRIVATE_KEY is required for execution_mode=send');
-  }
+  const resolved = resolvePrivateKeyContext({
+    signerMode: 'auto',
+    ...(options?.signerContext || {}),
+    ...(options?.signer || {}),
+    privateKey: options?.privateKey,
+  });
+  const privateKey = resolved.privateKey;
 
   const { contract, rpc } = await getContract(input, privateKey);
   const method = getMethod(contract, input.methodName);

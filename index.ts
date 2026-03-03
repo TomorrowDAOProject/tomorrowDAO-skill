@@ -5,10 +5,17 @@ export { getConfig, resetConfigCache, CONTRACTS, getProposalContractAddress } fr
 export { getAccessToken, clearTokenCache } from './src/core/auth.js';
 export { apiGet, apiPost } from './src/core/http.js';
 export { callView, callSend, packInput, clearAelfCache } from './src/core/chain-client.js';
+export { resolvePrivateKeyContext } from './src/core/signer-context.js';
 export { getAelfByRpc, clearAelfPool } from './src/core/aelf-pool.js';
 export { waitForTxResult } from './src/core/tx-waiter.js';
 export { SkillError } from './src/core/errors.js';
 export { log, logError, newTraceId, setLogLevel, resetLogLevelFromEnv } from './src/core/logger.js';
+export {
+  readWalletContext,
+  writeWalletContext,
+  getActiveWalletProfile,
+  setActiveWalletProfile,
+} from './src/core/wallet-context.js';
 
 // DAO
 export {

@@ -12,12 +12,14 @@ description: "TomorrowDAO governance, BP, and resource operations for agents."
 - DAO domain: create/update/proposal/discussion operations
 - Network governance and BP election operation set
 - Resource token trading with unified ToolResult/TxReceipt outputs
+- Shared signer resolution for send mode: `explicit -> context -> env`
 - Supports SDK, CLI, MCP, and OpenClaw integration from one codebase.
 
 ## Safe usage rules
 - Never print private keys, mnemonics, or tokens in channel outputs.
 - For write operations, require explicit user confirmation and validate parameters before sending transactions.
 - Prefer `simulate` or read-only queries first when available.
+- Active wallet context stores identity pointers only; never persist plaintext private keys.
 
 ## Command recipes
 - Start MCP server: `bun run mcp`
@@ -25,8 +27,10 @@ description: "TomorrowDAO governance, BP, and resource operations for agents."
 - Generate OpenClaw config: `bun run build:openclaw`
 - Verify OpenClaw config: `bun run build:openclaw:check`
 - Run CI coverage gate: `bun run test:coverage:ci`
+- For cross-skill signing, pass `signerMode=auto` and optional password in `signer`.
 
 ## Limits / Non-goals
 - This skill focuses on domain operations and adapters; it is not a full wallet custody system.
 - Do not hardcode environment secrets in source code or docs.
 - Avoid bypassing validation for external service calls.
+- `signerMode=daemon` is reserved and currently returns `SIGNER_DAEMON_NOT_IMPLEMENTED`.

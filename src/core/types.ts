@@ -1,6 +1,19 @@
 export type ChainId = 'AELF' | 'tDVV' | 'tDVW';
 
 export type ExecutionMode = 'simulate' | 'send';
+export type SignerMode = 'auto' | 'explicit' | 'context' | 'env' | 'daemon';
+export type SignerProvider = 'explicit' | 'context' | 'env' | 'daemon';
+
+export type SignerContextInput = {
+  signerMode?: SignerMode;
+  walletType?: 'EOA' | 'CA';
+  address?: string;
+  password?: string;
+  privateKey?: string;
+  caHash?: string;
+  caAddress?: string;
+  network?: 'mainnet' | 'testnet';
+};
 
 export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
@@ -64,6 +77,9 @@ export interface SendOptions {
   mode?: ExecutionMode;
   waitForMined?: boolean;
   traceId?: string;
+  signer?: SignerContextInput;
+  signerContext?: SignerContextInput;
+  privateKey?: string;
 }
 
 export interface ChainCallInput {

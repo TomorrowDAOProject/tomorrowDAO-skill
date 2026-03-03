@@ -53,7 +53,7 @@ bun install
 
 ```bash
 cp .env.example .env
-# 填写 TMRW_PRIVATE_KEY 等配置
+# 填写网络配置与可选 signer 回退配置
 ```
 
 ### 3. 一键配置（推荐）
@@ -87,7 +87,10 @@ bun run bin/setup.ts list
 | `TMRW_CHAIN_DEFAULT_DAO` | 否 | `tDVV` | DAO 默认链 |
 | `TMRW_CHAIN_DEFAULT_NETWORK` | 否 | `AELF` | Network Governance 默认链 |
 | `TMRW_AUTH_CHAIN_ID` | 否 | `AELF` | 鉴权签名使用链 ID |
-| `TMRW_PRIVATE_KEY` | `send`/鉴权接口需要 | — | 签名私钥 |
+| `TMRW_PRIVATE_KEY` | 否（`send`/鉴权 env 回退） | — | 签名私钥回退 |
+| `PORTKEY_WALLET_PASSWORD` | 否 | — | EOA wallet context 的密码缓存（可选） |
+| `PORTKEY_CA_KEYSTORE_PASSWORD` | 否 | — | CA keystore context 的密码缓存（可选） |
+| `PORTKEY_SKILL_WALLET_CONTEXT_PATH` | 否 | `~/.portkey/skill-wallet/context.v1.json` | 覆盖 active wallet context 文件路径 |
 | `TMRW_SOURCE` | 否 | `nightElf` | 鉴权 `source` 字段 |
 | `TMRW_CA_HASH` | 否 | — | 可选鉴权 `ca_hash` |
 | `TMRW_RPC_AELF` | 否 | `https://aelf-public-node.aelf.io` | AELF RPC |
@@ -141,6 +144,14 @@ bun run src/mcp/server.ts
   }
 }
 ```
+
+写操作 signer 解析顺序：
+
+1. 显式输入（`privateKey` 或 `signer` 对象）
+2. active wallet context（`~/.portkey/skill-wallet/context.v1.json`）
+3. 环境变量回退（`TMRW_PRIVATE_KEY`）
+
+`signerMode=daemon` 仅预埋接口，本轮返回 `SIGNER_DAEMON_NOT_IMPLEMENTED`。
 
 ### OpenClaw
 
