@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { Command } from 'commander';
+import packageJson from '../package.json';
 import { setupClaude, uninstallClaude } from './platforms/claude.js';
 import { setupCursor, uninstallCursor } from './platforms/cursor.js';
 import { setupOpenclaw } from './platforms/openclaw.js';
@@ -14,6 +15,7 @@ import * as path from 'path';
 
 const program = new Command();
 program.name('tomorrowdao-setup').description('Configure TomorrowDAO MCP/OpenClaw integration');
+program.version(packageJson.version);
 
 program
   .command('claude')

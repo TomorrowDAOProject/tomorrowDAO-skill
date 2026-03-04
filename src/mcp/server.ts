@@ -2,6 +2,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import packageJson from '../../package.json';
 import * as dao from '../domains/dao.js';
 import * as network from '../domains/network.js';
 import * as bp from '../domains/bp.js';
@@ -26,7 +27,7 @@ import {
 
 const server = new McpServer({
   name: 'tomorrowdao-agent-skills',
-  version: '0.1.0',
+  version: packageJson.version,
 });
 
 const signerInputSchema = z
