@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { Command } from 'commander';
+import packageJson from './package.json';
 import { parseJsonInput, printResult } from './cli-helpers.js';
 import * as dao from './src/domains/dao.js';
 import * as network from './src/domains/network.js';
@@ -10,7 +11,7 @@ const program = new Command();
 program
   .name('tomorrowdao-skill')
   .description('TomorrowDAO skill CLI (DAO / Network / BP / Resource)')
-  .version('0.1.0');
+  .version(packageJson.version);
 
 function addMode(command: Command): Command {
   return command.option('--mode <mode>', 'execution mode: simulate | send', 'simulate');
