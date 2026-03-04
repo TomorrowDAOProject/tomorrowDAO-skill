@@ -2,49 +2,61 @@ import { CONTRACTS, getConfig, getTokenContractAddress } from '../core/config.js
 import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { callSend, callView } from '../core/chain-client.js';
 import { apiGet, apiPost } from '../core/http.js';
-import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
+import type {
+  ChainId,
+  ExecutionMode,
+  JsonObject,
+  PagedResponse,
+  SignerContextInput,
+  ToolResult,
+} from '../core/types.js';
 
-export interface DaoCreateInput {
+type SignerAware = {
+  signer?: SignerContextInput;
+  signerContext?: SignerContextInput;
+};
+
+export interface DaoCreateInput extends SignerAware {
   chainId?: ChainId;
   args: Record<string, unknown>;
   mode?: ExecutionMode;
 }
 
-export interface DaoUpdateMetadataInput {
+export interface DaoUpdateMetadataInput extends SignerAware {
   chainId?: ChainId;
   daoId: string;
   metadata: Record<string, unknown>;
   mode?: ExecutionMode;
 }
 
-export interface DaoUploadFilesInput {
+export interface DaoUploadFilesInput extends SignerAware {
   chainId?: ChainId;
   daoId: string;
   files: Array<{ cid: string; name: string; url: string }>;
   mode?: ExecutionMode;
 }
 
-export interface DaoRemoveFilesInput {
+export interface DaoRemoveFilesInput extends SignerAware {
   chainId?: ChainId;
   daoId: string;
   fileCids: string[];
   mode?: ExecutionMode;
 }
 
-export interface DaoProposalCreateInput {
+export interface DaoProposalCreateInput extends SignerAware {
   chainId?: ChainId;
   methodName: 'CreateTransferProposal' | 'CreateProposal' | 'CreateVetoProposal';
   args: Record<string, unknown>;
   mode?: ExecutionMode;
 }
 
-export interface DaoVoteInput {
+export interface DaoVoteInput extends SignerAware {
   chainId?: ChainId;
   args: Record<string, unknown>;
   mode?: ExecutionMode;
 }
 
-export interface DaoExecuteInput {
+export interface DaoExecuteInput extends SignerAware {
   chainId?: ChainId;
   proposalId: string;
   mode?: ExecutionMode;
@@ -70,6 +82,14 @@ function daoChain(chainId?: ChainId): ChainId {
   return chainId || getConfig().defaultDaoChain;
 }
 
+function sendOptions(input: SignerAware & { mode?: ExecutionMode }) {
+  return {
+    mode: input.mode || 'simulate',
+    signer: input.signer,
+    signerContext: input.signerContext,
+  };
+}
+
 export async function daoCreate(input: DaoCreateInput): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
@@ -81,7 +101,7 @@ export async function daoCreate(input: DaoCreateInput): Promise<ToolResult<unkno
         methodName: 'CreateDAO',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -104,7 +124,7 @@ export async function daoUpdateMetadata(input: DaoUpdateMetadataInput): Promise<
           metadata: input.metadata,
         },
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -129,7 +149,7 @@ export async function daoUploadFiles(input: DaoUploadFilesInput): Promise<ToolRe
           files: input.files,
         },
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -154,7 +174,7 @@ export async function daoRemoveFiles(input: DaoRemoveFilesInput): Promise<ToolRe
           fileCids: input.fileCids,
         },
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -174,7 +194,7 @@ export async function daoProposalCreate(input: DaoProposalCreateInput): Promise<
         methodName: input.methodName,
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -193,7 +213,7 @@ export async function daoVote(input: DaoVoteInput): Promise<ToolResult<unknown>>
         methodName: 'Vote',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -212,7 +232,7 @@ export async function daoWithdraw(input: DaoVoteInput): Promise<ToolResult<unkno
         methodName: 'Withdraw',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -231,7 +251,7 @@ export async function daoExecute(input: DaoExecuteInput): Promise<ToolResult<unk
         methodName: 'ExecuteProposal',
         args: input.proposalId,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {

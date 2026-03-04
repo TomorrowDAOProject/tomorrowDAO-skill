@@ -88,6 +88,8 @@ bun run bin/setup.ts list
 | `TMRW_CHAIN_DEFAULT_NETWORK` | 否 | `AELF` | Network Governance 默认链 |
 | `TMRW_AUTH_CHAIN_ID` | 否 | `AELF` | 鉴权签名使用链 ID |
 | `TMRW_PRIVATE_KEY` | 否（`send`/鉴权 env 回退） | — | 签名私钥回退 |
+| `AELF_PRIVATE_KEY` | 否 | — | 共享 skill 兼容的第二优先级私钥回退 |
+| `PORTKEY_PRIVATE_KEY` | 否 | — | 共享 skill 兼容的第三优先级私钥回退 |
 | `PORTKEY_WALLET_PASSWORD` | 否 | — | EOA wallet context 的密码缓存（可选） |
 | `PORTKEY_CA_KEYSTORE_PASSWORD` | 否 | — | CA keystore context 的密码缓存（可选） |
 | `PORTKEY_SKILL_WALLET_CONTEXT_PATH` | 否 | `~/.portkey/skill-wallet/context.v1.json` | 覆盖 active wallet context 文件路径 |
@@ -149,7 +151,7 @@ bun run src/mcp/server.ts
 
 1. 显式输入（`privateKey` 或 `signer` 对象）
 2. active wallet context（`~/.portkey/skill-wallet/context.v1.json`）
-3. 环境变量回退（`TMRW_PRIVATE_KEY`）
+3. 环境变量回退（`TMRW_PRIVATE_KEY` -> `AELF_PRIVATE_KEY` -> `PORTKEY_PRIVATE_KEY`）
 
 `signerMode=daemon` 仅预埋接口，本轮返回 `SIGNER_DAEMON_NOT_IMPLEMENTED`。
 

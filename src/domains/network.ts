@@ -7,18 +7,30 @@ import {
 import { callSend, callView } from '../core/chain-client.js';
 import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { apiGet, apiPost } from '../core/http.js';
-import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
+import type {
+  ChainId,
+  ExecutionMode,
+  JsonObject,
+  PagedResponse,
+  SignerContextInput,
+  ToolResult,
+} from '../core/types.js';
 
 export type VoteAction = 'Approve' | 'Reject' | 'Abstain' | 'Release';
 
-export interface NetworkProposalCreateInput {
+type SignerAware = {
+  signer?: SignerContextInput;
+  signerContext?: SignerContextInput;
+};
+
+export interface NetworkProposalCreateInput extends SignerAware {
   chainId?: ChainId;
   proposalType: ProposalContractType;
   args: Record<string, unknown>;
   mode?: ExecutionMode;
 }
 
-export interface NetworkProposalVoteInput {
+export interface NetworkProposalVoteInput extends SignerAware {
   chainId?: ChainId;
   proposalType: ProposalContractType;
   proposalId: string;
@@ -26,7 +38,7 @@ export interface NetworkProposalVoteInput {
   mode?: ExecutionMode;
 }
 
-export interface NetworkOrganizationCreateInput {
+export interface NetworkOrganizationCreateInput extends SignerAware {
   chainId?: ChainId;
   proposalType: ProposalContractType;
   args: Record<string, unknown>;
@@ -53,7 +65,7 @@ export interface ContractNameUpdateInput {
   caHash?: string;
 }
 
-export interface ContractFlowStartInput {
+export interface ContractFlowStartInput extends SignerAware {
   chainId?: ChainId;
   action:
     | 'ProposeNewContract'
@@ -64,7 +76,7 @@ export interface ContractFlowStartInput {
   mode?: ExecutionMode;
 }
 
-export interface ContractFlowReleaseInput {
+export interface ContractFlowReleaseInput extends SignerAware {
   chainId?: ChainId;
   methodName: 'ReleaseApprovedContract' | 'ReleaseCodeCheckedContract';
   proposalId: string;
@@ -74,6 +86,14 @@ export interface ContractFlowReleaseInput {
 
 function networkChain(chainId?: ChainId): ChainId {
   return chainId || getConfig().defaultNetworkChain;
+}
+
+function sendOptions(input: SignerAware & { mode?: ExecutionMode }) {
+  return {
+    mode: input.mode || 'simulate',
+    signer: input.signer,
+    signerContext: input.signerContext,
+  };
 }
 
 function ensureNetworkMainChain(chainId: ChainId): ChainId {
@@ -177,7 +197,7 @@ export async function networkProposalCreate(input: NetworkProposalCreateInput): 
         methodName: 'CreateProposal',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -198,7 +218,7 @@ export async function networkProposalVote(input: NetworkProposalVoteInput): Prom
         methodName: input.action,
         args: input.proposalId,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -228,7 +248,7 @@ export async function networkOrganizationCreate(
         methodName: 'CreateOrganization',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -333,7 +353,7 @@ export async function networkContractFlowStart(
         methodName: input.action,
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -359,7 +379,7 @@ export async function networkContractFlowRelease(
           proposedContractInputHash: input.proposedContractInputHash,
         },
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {

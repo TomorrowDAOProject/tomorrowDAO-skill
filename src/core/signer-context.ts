@@ -122,6 +122,7 @@ export function resolvePrivateKeyContext(
   input: SignerContextInput = {},
 ): ResolvedPrivateKeyContext {
   const mode = input.signerMode || 'auto';
+  let contextError: unknown = null;
 
   if (mode === 'daemon') {
     throw new SkillError(
@@ -139,6 +140,7 @@ export function resolvePrivateKeyContext(
     try {
       return resolveContext(input);
     } catch (error) {
+      contextError = error;
       if (mode === 'context') throw error;
     }
   }
@@ -167,6 +169,10 @@ export function resolvePrivateKeyContext(
     if (mode === 'env') {
       throw new SkillError('SIGNER_CONTEXT_NOT_FOUND', 'no private key available from env');
     }
+  }
+
+  if (contextError) {
+    throw contextError;
   }
 
   throw new SkillError(

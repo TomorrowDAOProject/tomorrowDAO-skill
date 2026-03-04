@@ -30,6 +30,22 @@ const server = new McpServer({
   version: '0.1.0',
 });
 
+const signerInputSchema = z
+  .object({
+    signerMode: z.enum(['auto', 'explicit', 'context', 'env', 'daemon']).optional(),
+    walletType: z.enum(['EOA', 'CA']).optional(),
+    address: z.string().optional(),
+    password: z.string().optional(),
+    privateKey: z.string().optional(),
+    caHash: z.string().optional(),
+    caAddress: z.string().optional(),
+    network: z.enum(['mainnet', 'testnet']).optional(),
+  })
+  .optional()
+  .describe(
+    'Optional signer input. signerMode=auto resolves explicit -> active context -> env. daemon is reserved.',
+  );
+
 function format(result: unknown) {
   return {
     content: [
@@ -82,11 +98,20 @@ function registerTool(
   inputSchema: Record<string, z.ZodTypeAny>,
   handler: (payload: any) => Promise<unknown>,
 ): void {
+  const normalizedInputSchema =
+    Object.prototype.hasOwnProperty.call(inputSchema, 'mode')
+      ? {
+          ...inputSchema,
+          signer: signerInputSchema,
+          signerContext: signerInputSchema,
+        }
+      : inputSchema;
+
   server.registerTool(
     name,
     {
       description,
-      inputSchema,
+      inputSchema: normalizedInputSchema,
     },
     async (input) => runTool(name, input, handler),
   );
