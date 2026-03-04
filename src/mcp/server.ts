@@ -6,8 +6,7 @@ import * as dao from '../domains/dao.js';
 import * as network from '../domains/network.js';
 import * as bp from '../domains/bp.js';
 import * as resource from '../domains/resource.js';
-import { toToolError } from '../core/errors.js';
-import { logError, newTraceId } from '../core/logger.js';
+import { runTool } from './runtime.js';
 import {
   addressSchema,
   bpChangeVoteArgsSchema,
@@ -45,52 +44,6 @@ const signerInputSchema = z
   .describe(
     'Optional signer input. signerMode=auto resolves explicit -> active context -> env. daemon is reserved.',
   );
-
-function format(result: unknown) {
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: JSON.stringify(result, null, 2),
-      },
-    ],
-  };
-}
-
-function withTraceId(result: unknown, traceId: string): unknown {
-  if (!result || typeof result !== 'object' || !('success' in result)) {
-    return result;
-  }
-  const record = result as Record<string, unknown>;
-  return {
-    ...record,
-    traceId: record.traceId || traceId,
-  };
-}
-
-async function runTool(name: string, input: unknown, handler: (payload: any) => Promise<unknown>) {
-  const traceId = newTraceId();
-  try {
-    const raw = await handler(input);
-    const result = withTraceId(raw, traceId);
-    if ((result as any)?.success === false) {
-      logError('mcp_tool_failed', {
-        tool: name,
-        traceId,
-        error: (result as any).error,
-      });
-    }
-    return format(result);
-  } catch (err) {
-    const error = toToolError(err);
-    logError('mcp_tool_exception', { tool: name, traceId, error });
-    return format({
-      success: false,
-      traceId,
-      error,
-    });
-  }
-}
 
 function registerTool(
   name: string,

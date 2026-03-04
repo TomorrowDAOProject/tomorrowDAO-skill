@@ -132,10 +132,11 @@ function parseJsonObjectEnv(name: string): Record<string, unknown> | undefined {
 }
 
 function mergeRecord<T extends Record<string, string>>(target: T, patch: Record<string, unknown>): void {
+  const mutable = target as Record<string, string>;
   for (const [key, value] of Object.entries(patch)) {
     if (typeof value !== 'string') continue;
     if (key in target) {
-      target[key as keyof T] = value;
+      mutable[key] = value;
     }
   }
 }
