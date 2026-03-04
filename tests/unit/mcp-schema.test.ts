@@ -18,6 +18,12 @@ describe('mcp schema quality', () => {
     expect(source.includes('action: networkProposalActionSchema')).toBeTrue();
   });
 
+  test('send-mode tools include signer and signerContext schema', () => {
+    const source = fs.readFileSync(MCP_SERVER_PATH, 'utf-8');
+    expect(source.includes('signer: signerInputSchema')).toBeTrue();
+    expect(source.includes('signerContext: signerInputSchema')).toBeTrue();
+  });
+
   test('explicit schemas expose key fields for AI parameter construction', () => {
     const schemaSource = fs.readFileSync(MCP_SCHEMA_PATH, 'utf-8');
     expect(schemaSource.includes('export const daoVoteArgsSchema')).toBeTrue();

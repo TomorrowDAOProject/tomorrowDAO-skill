@@ -6,8 +6,7 @@ import * as dao from '../domains/dao.js';
 import * as network from '../domains/network.js';
 import * as bp from '../domains/bp.js';
 import * as resource from '../domains/resource.js';
-import { toToolError } from '../core/errors.js';
-import { logError, newTraceId } from '../core/logger.js';
+import { runTool } from './runtime.js';
 import {
   addressSchema,
   bpChangeVoteArgsSchema,
@@ -30,51 +29,21 @@ const server = new McpServer({
   version: '0.1.0',
 });
 
-function format(result: unknown) {
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: JSON.stringify(result, null, 2),
-      },
-    ],
-  };
-}
-
-function withTraceId(result: unknown, traceId: string): unknown {
-  if (!result || typeof result !== 'object' || !('success' in result)) {
-    return result;
-  }
-  const record = result as Record<string, unknown>;
-  return {
-    ...record,
-    traceId: record.traceId || traceId,
-  };
-}
-
-async function runTool(name: string, input: unknown, handler: (payload: any) => Promise<unknown>) {
-  const traceId = newTraceId();
-  try {
-    const raw = await handler(input);
-    const result = withTraceId(raw, traceId);
-    if ((result as any)?.success === false) {
-      logError('mcp_tool_failed', {
-        tool: name,
-        traceId,
-        error: (result as any).error,
-      });
-    }
-    return format(result);
-  } catch (err) {
-    const error = toToolError(err);
-    logError('mcp_tool_exception', { tool: name, traceId, error });
-    return format({
-      success: false,
-      traceId,
-      error,
-    });
-  }
-}
+const signerInputSchema = z
+  .object({
+    signerMode: z.enum(['auto', 'explicit', 'context', 'env', 'daemon']).optional(),
+    walletType: z.enum(['EOA', 'CA']).optional(),
+    address: z.string().optional(),
+    password: z.string().optional(),
+    privateKey: z.string().optional(),
+    caHash: z.string().optional(),
+    caAddress: z.string().optional(),
+    network: z.enum(['mainnet', 'testnet']).optional(),
+  })
+  .optional()
+  .describe(
+    'Optional signer input. signerMode=auto resolves explicit -> active context -> env. daemon is reserved.',
+  );
 
 function registerTool(
   name: string,
@@ -82,11 +51,20 @@ function registerTool(
   inputSchema: Record<string, z.ZodTypeAny>,
   handler: (payload: any) => Promise<unknown>,
 ): void {
+  const normalizedInputSchema =
+    Object.prototype.hasOwnProperty.call(inputSchema, 'mode')
+      ? {
+          ...inputSchema,
+          signer: signerInputSchema,
+          signerContext: signerInputSchema,
+        }
+      : inputSchema;
+
   server.registerTool(
     name,
     {
       description,
-      inputSchema,
+      inputSchema: normalizedInputSchema,
     },
     async (input) => runTool(name, input, handler),
   );

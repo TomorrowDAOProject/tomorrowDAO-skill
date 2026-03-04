@@ -1,6 +1,6 @@
 {
   "name": "@tomorrowdao/agent-skills",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "TomorrowDAO AI agent skills toolkit with MCP, CLI, OpenClaw and SDK interfaces.",
   "type": "module",
   "main": "index.ts",
@@ -51,6 +51,9 @@
     "test:coverage:ci": "COVERAGE_MIN_LINES=85 COVERAGE_MIN_FUNCS=80 bun run test:unit:coverage && bun run coverage:gate",
     "test:unit:coverage": "bun run test:unit --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage",
     "coverage:gate": "bun run scripts/coverage-gate.ts",
+    "typecheck:src": "bunx tsc -p tsconfig.src.json --noEmit",
+    "typecheck:test": "bunx tsc -p tsconfig.test.json --noEmit",
+    "typecheck": "bun run typecheck:src && bun run typecheck:test",
     "build:openclaw": "bun run bin/generate-openclaw.ts",
     "build:openclaw:check": "bun run bin/generate-openclaw.ts --check",
     "coverage:badge": "bun run bin/generate-coverage-badge.ts",
@@ -64,6 +67,8 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/node": "latest",
+    "ajv": "^8.17.1",
     "typescript": "^5.7.0"
   }
 }

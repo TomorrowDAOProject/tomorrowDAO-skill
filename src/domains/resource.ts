@@ -2,7 +2,19 @@ import { CONTRACTS, getConfig } from '../core/config.js';
 import { callSend } from '../core/chain-client.js';
 import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { apiGet } from '../core/http.js';
-import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
+import type {
+  ChainId,
+  ExecutionMode,
+  JsonObject,
+  PagedResponse,
+  SignerContextInput,
+  ToolResult,
+} from '../core/types.js';
+
+type SignerAware = {
+  signer?: SignerContextInput;
+  signerContext?: SignerContextInput;
+};
 
 function resourceChain(chainId?: ChainId): ChainId {
   return chainId || getConfig().defaultNetworkChain;
@@ -20,12 +32,20 @@ function validateTradeInput(symbol: string, amount: number): void {
   }
 }
 
+function sendOptions(input: SignerAware & { mode?: ExecutionMode }) {
+  return {
+    mode: input.mode || 'simulate',
+    signer: input.signer,
+    signerContext: input.signerContext,
+  };
+}
+
 export async function resourceBuy(input: {
   chainId?: ChainId;
   symbol: string;
   amount: number;
   mode?: ExecutionMode;
-}): Promise<ToolResult<JsonObject>> {
+} & SignerAware): Promise<ToolResult<JsonObject>> {
   try {
     validateTradeInput(input.symbol, input.amount);
     const chainId = ensureAelf(resourceChain(input.chainId));
@@ -39,7 +59,7 @@ export async function resourceBuy(input: {
           amount: input.amount,
         },
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok((result.result || {}) as JsonObject, { tx: result.tx });
   } catch (err) {
@@ -52,7 +72,7 @@ export async function resourceSell(input: {
   symbol: string;
   amount: number;
   mode?: ExecutionMode;
-}): Promise<ToolResult<JsonObject>> {
+} & SignerAware): Promise<ToolResult<JsonObject>> {
   try {
     validateTradeInput(input.symbol, input.amount);
     const chainId = ensureAelf(resourceChain(input.chainId));
@@ -66,7 +86,7 @@ export async function resourceSell(input: {
           amount: input.amount,
         },
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok((result.result || {}) as JsonObject, { tx: result.tx });
   } catch (err) {

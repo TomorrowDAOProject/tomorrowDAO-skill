@@ -33,7 +33,7 @@ describe('chain client', () => {
     expect((result.result as any).methodName).toBe('Vote');
   });
 
-  test('callSend send requires private key', async () => {
+  test('callSend send requires signer context or private key', async () => {
     await expect(
       callSend(
         {
@@ -45,7 +45,7 @@ describe('chain client', () => {
         { mode: 'send' },
       ),
     ).rejects.toMatchObject({
-      code: 'SEND_PRIVATE_KEY_REQUIRED',
+      code: 'SIGNER_CONTEXT_NOT_FOUND',
     });
   });
 

@@ -2,7 +2,19 @@ import { CONTRACTS, getConfig } from '../core/config.js';
 import { callSend } from '../core/chain-client.js';
 import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { apiGet, apiPost } from '../core/http.js';
-import type { ChainId, ExecutionMode, JsonObject, PagedResponse, ToolResult } from '../core/types.js';
+import type {
+  ChainId,
+  ExecutionMode,
+  JsonObject,
+  PagedResponse,
+  SignerContextInput,
+  ToolResult,
+} from '../core/types.js';
+
+type SignerAware = {
+  signer?: SignerContextInput;
+  signerContext?: SignerContextInput;
+};
 
 function bpChain(chainId?: ChainId): ChainId {
   return chainId || getConfig().defaultNetworkChain;
@@ -13,11 +25,19 @@ function ensureAelf(chainId: ChainId): ChainId {
   return chainId;
 }
 
+function sendOptions(input: SignerAware & { mode?: ExecutionMode }) {
+  return {
+    mode: input.mode || 'simulate',
+    signer: input.signer,
+    signerContext: input.signerContext,
+  };
+}
+
 export async function bpApply(input: {
   chainId?: ChainId;
   args: Record<string, unknown>;
   mode?: ExecutionMode;
-}): Promise<ToolResult<unknown>> {
+} & SignerAware): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
@@ -28,7 +48,7 @@ export async function bpApply(input: {
         methodName: 'AnnounceElection',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -40,7 +60,7 @@ export async function bpQuit(input: {
   chainId?: ChainId;
   args: Record<string, unknown>;
   mode?: ExecutionMode;
-}): Promise<ToolResult<unknown>> {
+} & SignerAware): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
@@ -51,7 +71,7 @@ export async function bpQuit(input: {
         methodName: 'QuitElection',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -63,7 +83,7 @@ export async function bpVote(input: {
   chainId?: ChainId;
   args: Record<string, unknown>;
   mode?: ExecutionMode;
-}): Promise<ToolResult<unknown>> {
+} & SignerAware): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
@@ -74,7 +94,7 @@ export async function bpVote(input: {
         methodName: 'Vote',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -86,7 +106,7 @@ export async function bpWithdraw(input: {
   chainId?: ChainId;
   args: unknown;
   mode?: ExecutionMode;
-}): Promise<ToolResult<unknown>> {
+} & SignerAware): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
@@ -97,7 +117,7 @@ export async function bpWithdraw(input: {
         methodName: 'Withdraw',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -109,7 +129,7 @@ export async function bpChangeVote(input: {
   chainId?: ChainId;
   args: Record<string, unknown>;
   mode?: ExecutionMode;
-}): Promise<ToolResult<unknown>> {
+} & SignerAware): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
@@ -120,7 +140,7 @@ export async function bpChangeVote(input: {
         methodName: 'ChangeVotingOption',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {
@@ -132,7 +152,7 @@ export async function bpClaimProfits(input: {
   chainId?: ChainId;
   args: Record<string, unknown>;
   mode?: ExecutionMode;
-}): Promise<ToolResult<unknown>> {
+} & SignerAware): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
     const chainId = ensureAelf(bpChain(input.chainId));
@@ -143,7 +163,7 @@ export async function bpClaimProfits(input: {
         methodName: 'ClaimProfits',
         args: input.args,
       },
-      { mode: input.mode || 'simulate' },
+      sendOptions(input),
     );
     return ok(result.result, { tx: result.tx });
   } catch (err) {

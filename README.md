@@ -53,7 +53,7 @@ bun install
 
 ```bash
 cp .env.example .env
-# fill TMRW_PRIVATE_KEY and other values
+# fill network config and optional signer fallback values
 ```
 
 ### One-Click Setup
@@ -87,7 +87,12 @@ bun run bin/setup.ts list
 | `TMRW_CHAIN_DEFAULT_DAO` | No | `tDVV` | Default DAO chain |
 | `TMRW_CHAIN_DEFAULT_NETWORK` | No | `AELF` | Default network governance chain |
 | `TMRW_AUTH_CHAIN_ID` | No | `AELF` | Chain id used in auth signature grant |
-| `TMRW_PRIVATE_KEY` | Yes for `send`/auth APIs | — | Signer private key |
+| `TMRW_PRIVATE_KEY` | No (env fallback for `send`/auth) | — | Signer private key fallback |
+| `AELF_PRIVATE_KEY` | No | — | Secondary signer fallback for shared-skill compatibility |
+| `PORTKEY_PRIVATE_KEY` | No | — | Third signer fallback for shared-skill compatibility |
+| `PORTKEY_WALLET_PASSWORD` | No | — | Optional password cache for EOA wallet context |
+| `PORTKEY_CA_KEYSTORE_PASSWORD` | No | — | Optional password cache for CA keystore context |
+| `PORTKEY_SKILL_WALLET_CONTEXT_PATH` | No | `~/.portkey/skill-wallet/context.v1.json` | Override active wallet context path |
 | `TMRW_SOURCE` | No | `nightElf` | Auth `source` field |
 | `TMRW_CA_HASH` | No | — | Optional auth `ca_hash` |
 | `TMRW_RPC_AELF` | No | `https://aelf-public-node.aelf.io` | AELF RPC endpoint |
@@ -141,6 +146,14 @@ Use [mcp-config.example.json](./mcp-config.example.json) as template:
   }
 }
 ```
+
+Write operations resolve signer in this order:
+
+1. explicit input (`privateKey` or `signer` object)
+2. active wallet context (`~/.portkey/skill-wallet/context.v1.json`)
+3. env fallback (`TMRW_PRIVATE_KEY` -> `AELF_PRIVATE_KEY` -> `PORTKEY_PRIVATE_KEY`)
+
+`signerMode=daemon` is pre-wired and currently returns `SIGNER_DAEMON_NOT_IMPLEMENTED`.
 
 ### OpenClaw
 

@@ -148,7 +148,7 @@ describe('dao domain', () => {
     });
 
     expect(result.success).toBeFalse();
-    expect(result.error?.code).toBe('SEND_PRIVATE_KEY_REQUIRED');
+    expect(result.error?.code).toBe('SIGNER_CONTEXT_NOT_FOUND');
   });
 
   test('returns fail result for token allowance on unsupported chain', async () => {
