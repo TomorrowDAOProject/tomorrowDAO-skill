@@ -35,7 +35,7 @@ tomorrowDAO-skill/
 │   ├── domains/            # dao/network/bp/resource
 │   └── mcp/server.ts       # MCP adapter
 ├── lib/                    # compatibility re-exports
-├── bin/setup.ts            # setup for claude/cursor/openclaw
+├── bin/setup.ts            # setup for claude/cursor/openclaw/ironclaw
 ├── openclaw.json
 ├── mcp-config.example.json
 └── tests/                  # unit/integration/e2e
@@ -74,9 +74,39 @@ bun run bin/setup.ts openclaw
 # OpenClaw (merge into existing config)
 bun run bin/setup.ts openclaw --config-path /path/to/openclaw-config.json
 
+# IronClaw (install trusted skill + stdio MCP server)
+bun run bin/setup.ts ironclaw
+
 # Check setup status
 bun run bin/setup.ts list
+
+# Remove IronClaw integration
+bun run bin/setup.ts uninstall ironclaw
 ```
+
+### IronClaw
+
+```bash
+# Install trusted skill + stdio MCP server
+bun run bin/setup.ts ironclaw
+
+# Remove IronClaw integration
+bun run bin/setup.ts uninstall ironclaw
+```
+
+The IronClaw setup does two things by default:
+
+- Writes a stdio MCP server entry to `~/.ironclaw/mcp-servers.json`
+- Copies this repo's `SKILL.md` to `~/.ironclaw/skills/tomorrowdao-agent-skills/SKILL.md`
+
+Important trust model note:
+
+- Use the trusted skill path above for DAO, BP, governance, and resource write operations.
+- Do **not** rely on `~/.ironclaw/installed_skills/` for this package if you need proposal creation, voting, release, BP actions, or resource trading.
+- IronClaw attenuates installed skills to read-only tools, which can make the agent appear to "query only" even though the MCP server is available.
+
+The MCP server exposes destructive annotations for write operations so IronClaw can request approval before DAO, governance, BP, and resource state changes.
+For compatibility, the MCP server currently emits both standard MCP camelCase annotations and IronClaw-compatible snake_case annotations because the current IronClaw source parses snake_case fields for MCP approval hints.
 
 ## Environment Variables
 
@@ -265,6 +295,14 @@ COVERAGE_MIN_LINES=85 COVERAGE_MIN_FUNCS=80 bun run test:coverage:ci
 # run real read-only e2e against public APIs
 RUN_TMRW_E2E=1 bun run test:e2e
 ```
+
+### IronClaw Smoke Test
+
+1. Run `bun run bin/setup.ts ironclaw`
+2. Ask a read prompt like `list the latest TomorrowDAO network proposals`
+3. Ask a network write prompt like `create a TomorrowDAO proposal in simulate mode`
+4. Ask a governance write prompt like `vote on this TomorrowDAO proposal`
+5. Confirm DAO/governance prompts stay on this skill and wallet or dex prompts do not
 
 ## Security
 

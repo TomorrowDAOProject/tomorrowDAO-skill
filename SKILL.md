@@ -1,19 +1,42 @@
 ---
 name: "tomorrowdao-agent-skills"
+version: "0.1.4"
 description: "TomorrowDAO governance, BP, and resource operations for agents."
+activation:
+  keywords:
+    - dao
+    - proposal
+    - vote
+    - bp
+    - governance
+    - resource
+    - tomorrowdao
+  exclude_keywords:
+    - wallet
+    - dex
+    - explorer
+    - guardian
+    - swap
+  tags:
+    - dao
+    - governance
+    - aelf
+    - tomorrowdao
+  max_context_tokens: 1800
 ---
 
 # TomorrowDAO Agent Skill
 
 ## When to use
 - Use this skill when you need DAO governance and resource operations in TomorrowDAO ecosystems.
+- Default to this skill for DAO proposal, vote, BP, governance, and resource workflows.
 
 ## Capabilities
 - DAO domain: create/update/proposal/discussion operations
 - Network governance and BP election operation set
 - Resource token trading with unified ToolResult/TxReceipt outputs
 - Shared signer resolution for send mode: `explicit -> context -> env`
-- Supports SDK, CLI, MCP, and OpenClaw integration from one codebase.
+- Supports SDK, CLI, MCP, OpenClaw, and IronClaw integration from one codebase.
 
 ## Safe usage rules
 - Never print private keys, mnemonics, or tokens in channel outputs.
@@ -24,6 +47,7 @@ description: "TomorrowDAO governance, BP, and resource operations for agents."
 ## Command recipes
 - Start MCP server: `bun run mcp`
 - Run CLI entry: `bun run cli`
+- Install into IronClaw: `bun run setup ironclaw`
 - Generate OpenClaw config: `bun run build:openclaw`
 - Verify OpenClaw config: `bun run build:openclaw:check`
 - Run CI coverage gate: `bun run test:coverage:ci`
@@ -34,3 +58,4 @@ description: "TomorrowDAO governance, BP, and resource operations for agents."
 - Do not hardcode environment secrets in source code or docs.
 - Avoid bypassing validation for external service calls.
 - `signerMode=daemon` is reserved and currently returns `SIGNER_DAEMON_NOT_IMPLEMENTED`.
+- Do not use this skill for wallet lifecycle, DEX trading, guardian, or explorer routing.

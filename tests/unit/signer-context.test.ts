@@ -177,6 +177,8 @@ describe('signer context', () => {
   });
 
   test('returns SIGNER_CONTEXT_NOT_FOUND when explicit/context/env all unavailable', () => {
+    tempDir = mkdtempSync(join(tmpdir(), 'tomorrow-signer-context-empty-'));
+    process.env.PORTKEY_SKILL_WALLET_CONTEXT_PATH = join(tempDir, 'context.v1.json');
     expectSignerErrorCode(
       () => resolvePrivateKeyContext({ signerMode: 'auto' }),
       'SIGNER_CONTEXT_NOT_FOUND',
