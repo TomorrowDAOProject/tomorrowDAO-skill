@@ -60,38 +60,38 @@ cp .env.example .env
 
 ```bash
 # Claude Desktop
-bun run bin/setup.ts claude
+bun run setup claude
 
 # Cursor (project-level)
-bun run bin/setup.ts cursor
+bun run setup cursor
 
 # Cursor (global)
-bun run bin/setup.ts cursor --global
+bun run setup cursor --global
 
 # OpenClaw (print config)
-bun run bin/setup.ts openclaw
+bun run setup openclaw
 
 # OpenClaw (merge into existing config)
-bun run bin/setup.ts openclaw --config-path /path/to/openclaw-config.json
+bun run setup openclaw --config-path /path/to/openclaw-config.json
 
 # IronClaw (install trusted skill + stdio MCP server)
-bun run bin/setup.ts ironclaw
+bun run setup ironclaw
 
 # Check setup status
-bun run bin/setup.ts list
+bun run setup list
 
 # Remove IronClaw integration
-bun run bin/setup.ts uninstall ironclaw
+bun run setup uninstall ironclaw
 ```
 
 ### IronClaw
 
 ```bash
 # Install trusted skill + stdio MCP server
-bun run bin/setup.ts ironclaw
+bun run setup ironclaw
 
 # Remove IronClaw integration
-bun run bin/setup.ts uninstall ironclaw
+bun run setup uninstall ironclaw
 ```
 
 The IronClaw setup does two things by default:
@@ -107,6 +107,13 @@ Important trust model note:
 
 The MCP server exposes destructive annotations for write operations so IronClaw can request approval before DAO, governance, BP, and resource state changes.
 For compatibility, the MCP server currently emits both standard MCP camelCase annotations and IronClaw-compatible snake_case annotations because the current IronClaw source parses snake_case fields for MCP approval hints.
+
+Remote activation contract:
+
+- GitHub repo/tree URLs are discovery sources only, not the final IronClaw install payload.
+- Preferred IronClaw activation from npm: `bunx -p @tomorrowdao/agent-skills tomorrowdao-setup ironclaw`
+- Prefer ClawHub / managed install for OpenClaw when available; otherwise use `bunx -p @tomorrowdao/agent-skills tomorrowdao-setup openclaw`
+- Local repo checkout remains a development smoke-test path only.
 
 ## Environment Variables
 
@@ -298,7 +305,7 @@ RUN_TMRW_E2E=1 bun run test:e2e
 
 ### IronClaw Smoke Test
 
-1. Run `bun run bin/setup.ts ironclaw`
+1. Run `bun run setup ironclaw`
 2. Ask a read prompt like `list the latest TomorrowDAO network proposals`
 3. Ask a network write prompt like `create a TomorrowDAO proposal in simulate mode`
 4. Ask a governance write prompt like `vote on this TomorrowDAO proposal`
