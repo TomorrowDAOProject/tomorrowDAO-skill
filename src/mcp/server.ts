@@ -30,6 +30,34 @@ const server = new McpServer({
   version: packageJson.version,
 });
 
+const READ_ONLY_ANNOTATIONS = {
+  readOnlyHint: true,
+  read_only_hint: true,
+} as const;
+
+const NETWORK_WRITE_ANNOTATIONS = {
+  destructiveHint: true,
+  destructive_hint: true,
+  openWorldHint: true,
+  side_effects_hint: true,
+} as const;
+
+const READ_ONLY_TOOLS = new Set([
+  'tomorrowdao_discussion_list',
+  'tomorrowdao_dao_proposal_my_info',
+  'tomorrowdao_dao_token_allowance_view',
+  'tomorrowdao_network_proposals_list',
+  'tomorrowdao_network_proposal_get',
+  'tomorrowdao_network_org_list',
+  'tomorrowdao_network_contract_flow_status',
+  'tomorrowdao_bp_votes_list',
+  'tomorrowdao_bp_team_desc_get',
+  'tomorrowdao_bp_team_desc_list',
+  'tomorrowdao_resource_realtime_records',
+  'tomorrowdao_resource_turnover',
+  'tomorrowdao_resource_records',
+]);
+
 const signerInputSchema = z
   .object({
     signerMode: z.enum(['auto', 'explicit', 'context', 'env', 'daemon']).optional(),
@@ -66,6 +94,9 @@ function registerTool(
     {
       description,
       inputSchema: normalizedInputSchema,
+      annotations: READ_ONLY_TOOLS.has(name)
+        ? READ_ONLY_ANNOTATIONS
+        : NETWORK_WRITE_ANNOTATIONS,
     },
     async (input) => runTool(name, input, handler),
   );

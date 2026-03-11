@@ -35,7 +35,7 @@ tomorrowDAO-skill/
 │   ├── domains/            # dao/network/bp/resource
 │   └── mcp/server.ts       # MCP 适配层
 ├── lib/                    # 兼容导出
-├── bin/setup.ts            # claude/cursor/openclaw 一键配置
+├── bin/setup.ts            # claude/cursor/openclaw/ironclaw 一键配置
 ├── openclaw.json
 ├── mcp-config.example.json
 └── tests/                  # unit/integration/e2e
@@ -60,23 +60,60 @@ cp .env.example .env
 
 ```bash
 # Claude Desktop
-bun run bin/setup.ts claude
+bun run setup claude
 
 # Cursor（项目级）
-bun run bin/setup.ts cursor
+bun run setup cursor
 
 # Cursor（全局）
-bun run bin/setup.ts cursor --global
+bun run setup cursor --global
 
 # OpenClaw（打印配置）
-bun run bin/setup.ts openclaw
+bun run setup openclaw
 
 # OpenClaw（合并到已有配置文件）
-bun run bin/setup.ts openclaw --config-path /path/to/openclaw-config.json
+bun run setup openclaw --config-path /path/to/openclaw-config.json
+
+# IronClaw（安装 trusted skill + stdio MCP server）
+bun run setup ironclaw
 
 # 查看配置状态
-bun run bin/setup.ts list
+bun run setup list
+
+# 移除 IronClaw 集成
+bun run setup uninstall ironclaw
 ```
+
+### IronClaw
+
+```bash
+# 安装 trusted skill + stdio MCP server
+bun run setup ironclaw
+
+# 移除 IronClaw 集成
+bun run setup uninstall ironclaw
+```
+
+IronClaw 默认会做两件事：
+
+- 向 `~/.ironclaw/mcp-servers.json` 写入一个 stdio MCP server
+- 把当前仓库的 `SKILL.md` 复制到 `~/.ironclaw/skills/tomorrowdao-agent-skills/SKILL.md`
+
+关于 trust model 的重要说明：
+
+- 需要 DAO、BP、治理、资源类写操作时，务必使用上面的 trusted skill 路径。
+- 如果你把这个包放进 `~/.ironclaw/installed_skills/`，不要期待它还能正常执行提案创建、投票、Release、BP 操作、资源交易等写操作。
+- IronClaw 会把 installed skill 的工具权限衰减为只读，这会表现成“只能查，不能写”，即使 MCP server 本身是可用的。
+
+当前 MCP server 已为写操作补齐 destructive annotations，IronClaw 可以据此在 DAO、治理、BP、资源状态变更前请求 approval。
+为兼容当前 IronClaw 源码，这里的 MCP annotations 会同时输出标准 MCP 的 camelCase 字段和 IronClaw 兼容的 snake_case 字段，因为 IronClaw 目前按 snake_case 解析 MCP approval hints。
+
+远程激活契约：
+
+- GitHub repo/tree URL 只用于 discovery，不是最终的 IronClaw 安装载体。
+- 推荐的 IronClaw npm 激活命令：`bunx -p @tomorrowdao/agent-skills tomorrowdao-setup ironclaw`
+- OpenClaw 若有 ClawHub / managed install 则优先使用；否则回退到 `bunx -p @tomorrowdao/agent-skills tomorrowdao-setup openclaw`
+- 本地 repo checkout 仅保留给开发阶段 smoke test。
 
 ## 环境变量
 
@@ -265,6 +302,14 @@ COVERAGE_MIN_LINES=85 COVERAGE_MIN_FUNCS=80 bun run test:coverage:ci
 # 真实只读 e2e（公网 API）
 RUN_TMRW_E2E=1 bun run test:e2e
 ```
+
+### IronClaw Smoke Test
+
+1. 执行 `bun run setup ironclaw`
+2. 先问一个只读问题，比如 `list the latest TomorrowDAO network proposals`
+3. 再问一个写操作，比如 `create a TomorrowDAO proposal in simulate mode`
+4. 再问一个治理写操作，比如 `vote on this TomorrowDAO proposal`
+5. 确认 DAO/治理类 prompt 命中这个 skill，而 wallet 或 dex prompt 不会误路由过来
 
 ## 安全建议
 

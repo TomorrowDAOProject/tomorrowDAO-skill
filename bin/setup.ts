@@ -3,6 +3,13 @@ import { Command } from 'commander';
 import packageJson from '../package.json';
 import { setupClaude, uninstallClaude } from './platforms/claude.js';
 import { setupCursor, uninstallCursor } from './platforms/cursor.js';
+import {
+  getIronclawMcpConfigPath,
+  getIronclawSkillInstallPath,
+  getIronclawSkillsDir,
+  setupIronclaw,
+  uninstallIronclaw,
+} from './platforms/ironclaw.js';
 import { setupOpenclaw } from './platforms/openclaw.js';
 import {
   getPackageRoot,
@@ -31,6 +38,16 @@ program
   .option('--server-path <path>')
   .option('--force')
   .action((opts) => setupCursor(opts));
+
+program
+  .command('ironclaw')
+  .option('--mcp-config-path <path>')
+  .option('--skills-dir <path>')
+  .option('--server-path <path>')
+  .option('--force')
+  .action((opts) => {
+    setupIronclaw(opts);
+  });
 
 program
   .command('openclaw')
@@ -71,6 +88,17 @@ program
     );
     console.log(`    Path: ${paths.cursorProject}\n`);
 
+    const ironclawMcpPath = getIronclawMcpConfigPath();
+    const ironclawSkillsDir = getIronclawSkillsDir();
+    const ironclawSkillPath = getIronclawSkillInstallPath(ironclawSkillsDir);
+    const ironclawConfig = fs.existsSync(ironclawMcpPath) ? readJsonFile(ironclawMcpPath) : null;
+    const ironclawConfigured = Array.isArray(ironclawConfig?.servers)
+      ? ironclawConfig.servers.some((server: any) => server?.name === SERVER_NAME)
+      : false;
+    console.log(`  IronClaw: ${ironclawConfigured || fs.existsSync(ironclawSkillPath) ? 'CONFIGURED' : 'NOT FOUND'}`);
+    console.log(`    MCP: ${ironclawMcpPath}`);
+    console.log(`    Trusted skill: ${ironclawSkillPath}\n`);
+
     console.log(`  OpenClaw: ${openclawConfig ? 'AVAILABLE' : 'NOT FOUND'}`);
     console.log(`    Path: ${openclawPath}`);
   });
@@ -79,6 +107,8 @@ program
   .command('uninstall <platform>')
   .option('--global')
   .option('--config-path <path>')
+  .option('--mcp-config-path <path>')
+  .option('--skills-dir <path>')
   .action((platform, opts) => {
     if (platform === 'claude') {
       uninstallClaude(opts);
@@ -86,6 +116,13 @@ program
     }
     if (platform === 'cursor') {
       uninstallCursor(opts);
+      return;
+    }
+    if (platform === 'ironclaw') {
+      uninstallIronclaw({
+        mcpConfigPath: opts.mcpConfigPath,
+        skillsDir: opts.skillsDir,
+      });
       return;
     }
     if (platform === 'openclaw') {

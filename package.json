@@ -17,6 +17,7 @@
     "src/",
     "lib/",
     "bin/",
+    "SKILL.md",
     "cli-helpers.ts",
     "tomorrowdao_skill.ts",
     "tomorrowdao_skill.js",
