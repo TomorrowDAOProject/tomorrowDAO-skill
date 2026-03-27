@@ -31,7 +31,11 @@ export {
   discussionComment,
   daoProposalMyInfo,
   daoTokenAllowanceView,
+  daoTokenBalanceView,
 } from './src/domains/dao.js';
+
+// Token read helpers
+export { tokenAllowanceView, tokenBalanceView } from './src/domains/token.js';
 
 // Network governance
 export {

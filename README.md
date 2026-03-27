@@ -10,6 +10,8 @@ TomorrowDAO AI agent skill toolkit on aelf, with **MCP + OpenClaw + CLI + SDK** 
 ## Features
 
 - DAO: create DAO, update metadata, create/vote/withdraw/execute proposal, discussion APIs
+- Token read helpers: balance view, allowance view
+- DAO read helpers: proposal my-info, DAO token allowance view alias, DAO token balance view alias
 - Network governance: proposal create/vote/release, organization create, contract-name management, contract-flow actions
 - BP election: apply, quit, vote, withdraw, change vote, claim profits, team description updates
 - Resource: buy/sell resource token and query market records
@@ -32,7 +34,7 @@ tomorrowDAO-skill/
 ├── tomorrowdao_skill.ts    # CLI adapter
 ├── src/
 │   ├── core/               # config/auth/http/chain/tx/error/types
-│   ├── domains/            # dao/network/bp/resource
+│   ├── domains/            # dao/token/network/bp/resource
 │   └── mcp/server.ts       # MCP adapter
 ├── lib/                    # compatibility re-exports
 ├── bin/setup.ts            # setup for claude/cursor/openclaw/ironclaw
@@ -152,6 +154,15 @@ bun run tomorrowdao_skill.ts dao create --input '{"args":{"metadata":{"name":"de
 # DAO vote (proposalId and votingItemId are interchangeable DAO hash aliases)
 bun run tomorrowdao_skill.ts dao vote --input '{"args":{"proposalId":"<PROPOSAL_ID>","voteOption":0,"voteAmount":100000000}}' --mode send
 
+# DAO token balance view
+bun run tomorrowdao_skill.ts dao token-balance-view --input '{"chainId":"tDVV","symbol":"AIBOUNTY","owner":"<OWNER_ADDRESS>"}'
+
+# Generic token balance view
+bun run tomorrowdao_skill.ts token balance-view --input '{"chainId":"tDVV","symbol":"AIBOUNTY","owner":"<OWNER_ADDRESS>"}'
+
+# Generic token allowance view
+bun run tomorrowdao_skill.ts token allowance-view --input '{"chainId":"tDVV","symbol":"AIBOUNTY","owner":"<OWNER_ADDRESS>","spender":"<SPENDER_ADDRESS>"}'
+
 # DAO withdraw
 bun run tomorrowdao_skill.ts dao withdraw --input '{"args":{"daoId":"<DAO_ID>","withdrawAmount":100000000,"proposalId":"<PROPOSAL_ID>"}}' --mode send
 
@@ -230,9 +241,9 @@ const proposalRes = await networkProposalCreate({
 });
 ```
 
-## MCP Tools (41)
+## MCP Tools (44)
 
-### DAO (12)
+### DAO (13)
 - `tomorrowdao_dao_create`
 - `tomorrowdao_dao_update_metadata`
 - `tomorrowdao_dao_upload_files`
@@ -245,6 +256,11 @@ const proposalRes = await networkProposalCreate({
 - `tomorrowdao_discussion_comment`
 - `tomorrowdao_dao_proposal_my_info`
 - `tomorrowdao_dao_token_allowance_view`
+- `tomorrowdao_dao_token_balance_view`
+
+### Token (2)
+- `tomorrowdao_token_allowance_view`
+- `tomorrowdao_token_balance_view`
 
 ### Network Governance (13)
 - `tomorrowdao_network_proposals_list`

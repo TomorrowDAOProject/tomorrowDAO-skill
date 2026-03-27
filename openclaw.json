@@ -525,8 +525,89 @@
       }
     },
     {
+      "name": "tomorrowdao_token_allowance_view",
+      "description": "Get token allowance.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "token",
+        "allowance-view"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Owner address"
+          },
+          "spender": {
+            "type": "string",
+            "description": "Spender address"
+          }
+        },
+        "required": [
+          "symbol",
+          "owner",
+          "spender"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_token_balance_view",
+      "description": "Get token balance.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "token",
+        "balance-view"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Owner address"
+          }
+        },
+        "required": [
+          "symbol",
+          "owner"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
       "name": "tomorrowdao_dao_token_allowance_view",
-      "description": "Get DAO token allowance.",
+      "description": "Get DAO token allowance for governance token workflows.",
       "command": "bun",
       "args": [
         "run",
@@ -563,6 +644,44 @@
           "symbol",
           "owner",
           "spender"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "tomorrowdao_dao_token_balance_view",
+      "description": "Get DAO token balance for governance token workflows.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "dao",
+        "token-balance-view"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Owner address"
+          }
+        },
+        "required": [
+          "symbol",
+          "owner"
         ],
         "additionalProperties": true
       }

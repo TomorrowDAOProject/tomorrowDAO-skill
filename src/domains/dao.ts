@@ -1,7 +1,8 @@
-import { CONTRACTS, getConfig, getTokenContractAddress } from '../core/config.js';
+import { CONTRACTS, getConfig } from '../core/config.js';
 import { fail, ok, requireField, SkillError } from '../core/errors.js';
 import { callSend, callView } from '../core/chain-client.js';
 import { apiGet, apiPost } from '../core/http.js';
+import { tokenAllowanceView, tokenBalanceView } from './token.js';
 import type {
   ChainId,
   ExecutionMode,
@@ -423,29 +424,5 @@ export async function daoProposalMyInfo(params: {
   }
 }
 
-export async function daoTokenAllowanceView(params: {
-  chainId?: ChainId;
-  symbol: string;
-  owner: string;
-  spender: string;
-}): Promise<ToolResult<JsonObject>> {
-  try {
-    requireField(params.symbol, 'symbol');
-    requireField(params.owner, 'owner');
-    requireField(params.spender, 'spender');
-    const chainId = daoChain(params.chainId);
-    const data = await callView({
-      chainId,
-      contractAddress: getTokenContractAddress(chainId),
-      methodName: 'GetAllowance',
-      args: {
-        symbol: params.symbol,
-        owner: params.owner,
-        spender: params.spender,
-      },
-    });
-    return ok((data || {}) as JsonObject);
-  } catch (err) {
-    return fail(err);
-  }
-}
+export const daoTokenAllowanceView = tokenAllowanceView;
+export const daoTokenBalanceView = tokenBalanceView;

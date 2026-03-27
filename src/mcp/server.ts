@@ -4,6 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import packageJson from '../../package.json';
 import * as dao from '../domains/dao.js';
+import * as token from '../domains/token.js';
 import * as network from '../domains/network.js';
 import * as bp from '../domains/bp.js';
 import * as resource from '../domains/resource.js';
@@ -46,6 +47,9 @@ const READ_ONLY_TOOLS = new Set([
   'tomorrowdao_discussion_list',
   'tomorrowdao_dao_proposal_my_info',
   'tomorrowdao_dao_token_allowance_view',
+  'tomorrowdao_dao_token_balance_view',
+  'tomorrowdao_token_allowance_view',
+  'tomorrowdao_token_balance_view',
   'tomorrowdao_network_proposals_list',
   'tomorrowdao_network_proposal_get',
   'tomorrowdao_network_org_list',
@@ -235,8 +239,31 @@ registerTool(
 );
 
 registerTool(
+  'tomorrowdao_token_allowance_view',
+  'Get token allowance',
+  {
+    chainId: chainIdSchema,
+    symbol: z.string().min(1).describe('Token symbol, e.g. ELF.'),
+    owner: addressSchema.describe('Owner address.'),
+    spender: addressSchema.describe('Spender address.'),
+  },
+  token.tokenAllowanceView,
+);
+
+registerTool(
+  'tomorrowdao_token_balance_view',
+  'Get token balance',
+  {
+    chainId: chainIdSchema,
+    symbol: z.string().min(1).describe('Token symbol, e.g. ELF.'),
+    owner: addressSchema.describe('Owner address.'),
+  },
+  token.tokenBalanceView,
+);
+
+registerTool(
   'tomorrowdao_dao_token_allowance_view',
-  'Get token allowance for DAO vote token',
+  'Get token allowance for DAO vote token (compat alias of generic token allowance view)',
   {
     chainId: chainIdSchema,
     symbol: z.string().min(1).describe('Token symbol, e.g. ELF.'),
@@ -244,6 +271,17 @@ registerTool(
     spender: addressSchema.describe('Spender address.'),
   },
   dao.daoTokenAllowanceView,
+);
+
+registerTool(
+  'tomorrowdao_dao_token_balance_view',
+  'Get token balance for DAO vote token (compat alias of generic token balance view)',
+  {
+    chainId: chainIdSchema,
+    symbol: z.string().min(1).describe('Token symbol, e.g. ELF.'),
+    owner: addressSchema.describe('Owner address.'),
+  },
+  dao.daoTokenBalanceView,
 );
 
 registerTool(

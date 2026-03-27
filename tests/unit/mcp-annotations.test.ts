@@ -5,7 +5,10 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 const READ_TOOLS = [
   'tomorrowdao_discussion_list',
   'tomorrowdao_dao_proposal_my_info',
+  'tomorrowdao_token_allowance_view',
+  'tomorrowdao_token_balance_view',
   'tomorrowdao_dao_token_allowance_view',
+  'tomorrowdao_dao_token_balance_view',
   'tomorrowdao_network_proposals_list',
   'tomorrowdao_network_proposal_get',
   'tomorrowdao_network_org_list',

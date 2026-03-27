@@ -1,6 +1,6 @@
 ---
 name: "tomorrowdao-agent-skills"
-version: "0.1.5"
+version: "0.2.0"
 description: "TomorrowDAO governance, BP, and resource operations for agents."
 activation:
   keywords:
@@ -33,6 +33,8 @@ activation:
 
 ## Capabilities
 - DAO domain: create/update/proposal/discussion operations
+- Token read helpers: allowance view, balance view
+- DAO read helpers: proposal my-info, DAO token allowance view alias, DAO token balance view alias
 - Network governance and BP election operation set
 - Resource token trading with unified ToolResult/TxReceipt outputs
 - Shared signer resolution for send mode: `explicit -> context -> env`
