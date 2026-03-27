@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { bpApply } from '../../src/domains/bp.js';
-import { daoCreate } from '../../src/domains/dao.js';
+import { daoCreate, daoVote, daoWithdraw } from '../../src/domains/dao.js';
 import { networkProposalCreate } from '../../src/domains/network.js';
 import { resourceBuy } from '../../src/domains/resource.js';
 
@@ -33,6 +33,46 @@ describe('e2e simulate smoke', () => {
     });
 
     expect(res.success).toBeTrue();
+  });
+
+  test('dao vote simulate', async () => {
+    const res = await daoVote({
+      chainId: 'tDVV',
+      args: {
+        proposalId: 'simulate-proposal',
+        voteOption: 0,
+        voteAmount: 100000000,
+      },
+      mode: 'simulate',
+    });
+
+    expect(res.success).toBeTrue();
+    expect((res.data as any).args).toEqual({
+      votingItemId: 'simulate-proposal',
+      voteOption: 0,
+      voteAmount: 100000000,
+    });
+  });
+
+  test('dao withdraw simulate', async () => {
+    const res = await daoWithdraw({
+      chainId: 'tDVV',
+      args: {
+        daoId: 'simulate-dao',
+        withdrawAmount: 100000000,
+        proposalIds: ['simulate-proposal'],
+      },
+      mode: 'simulate',
+    });
+
+    expect(res.success).toBeTrue();
+    expect((res.data as any).args).toEqual({
+      daoId: 'simulate-dao',
+      withdrawAmount: 100000000,
+      votingItemIdList: {
+        value: ['simulate-proposal'],
+      },
+    });
   });
 
   test('bp apply simulate', async () => {

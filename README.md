@@ -149,6 +149,12 @@ Remote activation contract:
 # DAO
 bun run tomorrowdao_skill.ts dao create --input '{"args":{"metadata":{"name":"demo"}}}' --mode simulate
 
+# DAO vote (proposalId and votingItemId are interchangeable DAO hash aliases)
+bun run tomorrowdao_skill.ts dao vote --input '{"args":{"proposalId":"<PROPOSAL_ID>","voteOption":0,"voteAmount":100000000}}' --mode send
+
+# DAO withdraw
+bun run tomorrowdao_skill.ts dao withdraw --input '{"args":{"daoId":"<DAO_ID>","withdrawAmount":100000000,"proposalId":"<PROPOSAL_ID>"}}' --mode send
+
 # Network governance
 bun run tomorrowdao_skill.ts network proposal-create --input '{"proposalType":"Parliament","args":{...}}' --mode send
 
@@ -202,12 +208,18 @@ bun run build:openclaw:check
 ### SDK
 
 ```ts
-import { daoCreate, networkProposalCreate } from '@tomorrowdao/agent-skills';
+import { daoCreate, daoVote, networkProposalCreate } from '@tomorrowdao/agent-skills';
 
 const daoRes = await daoCreate({
   chainId: 'tDVV',
   mode: 'simulate',
   args: { metadata: { name: 'hello codex' } },
+});
+
+const voteRes = await daoVote({
+  chainId: 'tDVV',
+  mode: 'simulate',
+  args: { proposalId: 'proposal-hash', voteOption: 0, voteAmount: 100000000 },
 });
 
 const proposalRes = await networkProposalCreate({

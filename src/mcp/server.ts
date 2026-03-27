@@ -165,7 +165,7 @@ registerTool(
 
 registerTool(
   'tomorrowdao_dao_vote',
-  'Vote in DAO proposal',
+  'Vote in DAO proposal by proposalId or votingItemId',
   {
     chainId: chainIdSchema,
     args: daoVoteArgsSchema,
@@ -176,7 +176,7 @@ registerTool(
 
 registerTool(
   'tomorrowdao_dao_withdraw',
-  'Withdraw DAO vote',
+  'Withdraw DAO vote by daoId + withdrawAmount + proposalId(s)/votingItemId(s)',
   {
     chainId: chainIdSchema,
     args: daoWithdrawArgsSchema,

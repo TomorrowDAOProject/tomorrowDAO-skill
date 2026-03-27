@@ -149,6 +149,12 @@ IronClaw 默认会做两件事：
 # DAO
 bun run tomorrowdao_skill.ts dao create --input '{"args":{"metadata":{"name":"demo"}}}' --mode simulate
 
+# DAO 投票（proposalId 和 votingItemId 都可作为 DAO 提案 hash 别名）
+bun run tomorrowdao_skill.ts dao vote --input '{"args":{"proposalId":"<PROPOSAL_ID>","voteOption":0,"voteAmount":100000000}}' --mode send
+
+# DAO 撤票
+bun run tomorrowdao_skill.ts dao withdraw --input '{"args":{"daoId":"<DAO_ID>","withdrawAmount":100000000,"proposalId":"<PROPOSAL_ID>"}}' --mode send
+
 # Network Governance
 bun run tomorrowdao_skill.ts network proposal-create --input '{"proposalType":"Parliament","args":{...}}' --mode send
 
@@ -202,12 +208,18 @@ bun run build:openclaw:check
 ### SDK
 
 ```ts
-import { daoCreate, networkProposalCreate } from '@tomorrowdao/agent-skills';
+import { daoCreate, daoVote, networkProposalCreate } from '@tomorrowdao/agent-skills';
 
 const daoRes = await daoCreate({
   chainId: 'tDVV',
   mode: 'simulate',
   args: { metadata: { name: 'hello codex' } },
+});
+
+const voteRes = await daoVote({
+  chainId: 'tDVV',
+  mode: 'simulate',
+  args: { proposalId: 'proposal-hash', voteOption: 0, voteAmount: 100000000 },
 });
 
 const proposalRes = await networkProposalCreate({

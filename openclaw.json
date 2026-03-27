@@ -267,7 +267,7 @@
     },
     {
       "name": "tomorrowdao_dao_vote",
-      "description": "Vote for DAO proposal.",
+      "description": "Vote for DAO proposal by proposalId or votingItemId.",
       "command": "bun",
       "args": [
         "run",
@@ -290,7 +290,7 @@
           "args": {
             "type": "object",
             "additionalProperties": true,
-            "description": "Contract args object. Example: {\"proposalId\":\"...\",\"voteOption\":1}"
+            "description": "Contract args object. Example: {\"proposalId\":\"...\",\"voteOption\":0,\"voteAmount\":100000000} or {\"votingItemId\":\"...\",\"voteOption\":0,\"voteAmount\":100000000}"
           },
           "mode": {
             "type": "string",
@@ -310,7 +310,7 @@
     },
     {
       "name": "tomorrowdao_dao_withdraw",
-      "description": "Withdraw DAO vote.",
+      "description": "Withdraw DAO vote by daoId + withdrawAmount + proposalId(s)/votingItemId(s).",
       "command": "bun",
       "args": [
         "run",
@@ -333,7 +333,7 @@
           "args": {
             "type": "object",
             "additionalProperties": true,
-            "description": "Contract args object. Example: {\"proposalId\":\"...\",\"voteRecordId\":\"...\"}"
+            "description": "Contract args object. Example: {\"daoId\":\"...\",\"withdrawAmount\":100000000,\"proposalId\":\"...\"} or {\"daoId\":\"...\",\"withdrawAmount\":100000000,\"votingItemIds\":[\"...\"]}"
           },
           "mode": {
             "type": "string",
