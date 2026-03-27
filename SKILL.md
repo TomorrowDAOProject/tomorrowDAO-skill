@@ -1,6 +1,6 @@
 ---
 name: "tomorrowdao-agent-skills"
-version: "0.1.5"
+version: "0.2.0"
 description: "TomorrowDAO governance, BP, and resource operations for agents."
 activation:
   keywords:
