@@ -29,5 +29,10 @@ describe('dao simulate', () => {
       mode: 'simulate',
     });
     expect(res.success).toBeTrue();
+    expect((res.data as any).args).toEqual({
+      votingItemId: 'abc',
+      voteOption: 1,
+      voteAmount: 0,
+    });
   });
 });

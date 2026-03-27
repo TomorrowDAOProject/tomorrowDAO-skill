@@ -76,7 +76,7 @@ describe('dao domain', () => {
     });
     const withdraw = await daoWithdraw({
       chainId: 'tDVV',
-      args: { proposalId: 'p-1', voteRecordId: 'vr-1' },
+      args: { daoId: 'dao-1', withdrawAmount: 1000, proposalId: 'p-1' },
       mode: 'simulate',
     });
     const execute = await daoExecute({
@@ -94,6 +94,84 @@ describe('dao domain', () => {
     expect(vote.success).toBeTrue();
     expect(withdraw.success).toBeTrue();
     expect(execute.success).toBeTrue();
+    expect((vote.data as any).args).toEqual({
+      votingItemId: 'p-1',
+      voteOption: 1,
+      voteAmount: 0,
+    });
+    expect((withdraw.data as any).args).toEqual({
+      daoId: 'dao-1',
+      withdrawAmount: 1000,
+      votingItemIdList: {
+        value: ['p-1'],
+      },
+    });
+  });
+
+  test('supports votingItemId directly for dao vote', async () => {
+    const result = await daoVote({
+      chainId: 'tDVV',
+      args: { votingItemId: 'hash-1', voteOption: 0, voteAmount: 100 },
+      mode: 'simulate',
+    });
+
+    expect(result.success).toBeTrue();
+    expect((result.data as any).args).toEqual({
+      votingItemId: 'hash-1',
+      voteOption: 0,
+      voteAmount: 100,
+    });
+  });
+
+  test('fails when proposalId and votingItemId differ for dao vote', async () => {
+    const result = await daoVote({
+      chainId: 'tDVV',
+      args: { proposalId: 'proposal-1', votingItemId: 'proposal-2', voteOption: 0, voteAmount: 100 },
+      mode: 'simulate',
+    });
+
+    expect(result.success).toBeFalse();
+    expect(result.error?.code).toBe('INVALID_INPUT');
+    expect(result.error?.message).toContain('must match');
+  });
+
+  test('normalizes dao withdraw target ids into votingItemIdList', async () => {
+    const result = await daoWithdraw({
+      chainId: 'tDVV',
+      args: {
+        daoId: 'dao-1',
+        withdrawAmount: 300,
+        proposalId: 'proposal-1',
+        votingItemIds: ['proposal-2', 'proposal-1'],
+      },
+      mode: 'simulate',
+    });
+
+    expect(result.success).toBeTrue();
+    expect((result.data as any).args).toEqual({
+      daoId: 'dao-1',
+      withdrawAmount: 300,
+      votingItemIdList: {
+        value: ['proposal-1', 'proposal-2'],
+      },
+    });
+  });
+
+  test('fails fast for deprecated dao withdraw voteRecordId', async () => {
+    const result = await daoWithdraw({
+      chainId: 'tDVV',
+      args: {
+        daoId: 'dao-1',
+        withdrawAmount: 100,
+        proposalId: 'proposal-1',
+        voteRecordId: 'vote-record-1',
+      },
+      mode: 'simulate',
+    });
+
+    expect(result.success).toBeFalse();
+    expect(result.error?.code).toBe('INVALID_INPUT');
+    expect(result.error?.message).toContain('voteRecordId is no longer supported');
   });
 
   test('supports discussion and my-info APIs', async () => {

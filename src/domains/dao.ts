@@ -56,6 +56,12 @@ export interface DaoVoteInput extends SignerAware {
   mode?: ExecutionMode;
 }
 
+export interface DaoWithdrawInput extends SignerAware {
+  chainId?: ChainId;
+  args: Record<string, unknown>;
+  mode?: ExecutionMode;
+}
+
 export interface DaoExecuteInput extends SignerAware {
   chainId?: ChainId;
   proposalId: string;
@@ -87,6 +93,109 @@ function sendOptions(input: SignerAware & { mode?: ExecutionMode }) {
     mode: input.mode || 'simulate',
     signer: input.signer,
     signerContext: input.signerContext,
+  };
+}
+
+function readOptionalStringField(args: Record<string, unknown>, name: string): string | undefined {
+  const value = args[name];
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new SkillError('INVALID_INPUT', `${name} must be a non-empty string`);
+  }
+  return value;
+}
+
+function readStringArrayField(args: Record<string, unknown>, name: string): string[] {
+  const value = args[name];
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new SkillError('INVALID_INPUT', `${name} must be a non-empty string array`);
+  }
+  return value.map((item, index) => {
+    if (typeof item !== 'string' || item.trim().length === 0) {
+      throw new SkillError('INVALID_INPUT', `${name}[${index}] must be a non-empty string`);
+    }
+    return item;
+  });
+}
+
+function readIntegerField(
+  args: Record<string, unknown>,
+  name: string,
+  opts: { min?: number } = {},
+): number {
+  const value = args[name];
+  if (typeof value !== 'number' || !Number.isInteger(value)) {
+    throw new SkillError('INVALID_INPUT', `${name} must be an integer`);
+  }
+  if (opts.min !== undefined && value < opts.min) {
+    const qualifier = opts.min === 0 ? 'non-negative' : `>= ${opts.min}`;
+    throw new SkillError('INVALID_INPUT', `${name} must be ${qualifier}`);
+  }
+  return value;
+}
+
+function normalizeDaoVoteArgs(args: Record<string, unknown>): Record<string, unknown> {
+  const proposalId = readOptionalStringField(args, 'proposalId');
+  const votingItemId = readOptionalStringField(args, 'votingItemId');
+
+  if (!proposalId && !votingItemId) {
+    throw new SkillError('INVALID_INPUT', 'proposalId or votingItemId is required');
+  }
+
+  if (proposalId && votingItemId && proposalId !== votingItemId) {
+    throw new SkillError('INVALID_INPUT', 'proposalId and votingItemId must match when both are provided');
+  }
+
+  const normalized: Record<string, unknown> = {
+    votingItemId: votingItemId || proposalId,
+    voteOption: readIntegerField(args, 'voteOption'),
+    voteAmount: readIntegerField(args, 'voteAmount', { min: 0 }),
+  };
+
+  const memo = args.memo;
+  if (memo !== undefined) {
+    if (typeof memo !== 'string') {
+      throw new SkillError('INVALID_INPUT', 'memo must be a string');
+    }
+    normalized.memo = memo;
+  }
+
+  return normalized;
+}
+
+function normalizeDaoWithdrawArgs(args: Record<string, unknown>): Record<string, unknown> {
+  if (args.voteRecordId !== undefined) {
+    throw new SkillError(
+      'INVALID_INPUT',
+      'voteRecordId is no longer supported; use daoId + withdrawAmount + proposalId/proposalIds or votingItemId/votingItemIds',
+    );
+  }
+
+  const singularIds = [
+    readOptionalStringField(args, 'proposalId'),
+    readOptionalStringField(args, 'votingItemId'),
+  ].filter((value): value is string => Boolean(value));
+
+  const arrayIds = [
+    ...readStringArrayField(args, 'proposalIds'),
+    ...readStringArrayField(args, 'votingItemIds'),
+  ];
+
+  const votingItemIds = Array.from(new Set([...singularIds, ...arrayIds]));
+  if (votingItemIds.length === 0) {
+    throw new SkillError(
+      'INVALID_INPUT',
+      'proposalId/proposalIds or votingItemId/votingItemIds is required',
+    );
+  }
+
+  return {
+    daoId: requireField(readOptionalStringField(args, 'daoId'), 'daoId'),
+    withdrawAmount: readIntegerField(args, 'withdrawAmount', { min: 1 }),
+    votingItemIdList: {
+      value: votingItemIds,
+    },
   };
 }
 
@@ -205,13 +314,14 @@ export async function daoProposalCreate(input: DaoProposalCreateInput): Promise<
 export async function daoVote(input: DaoVoteInput): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
+    const args = normalizeDaoVoteArgs(input.args);
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
         chainId,
         contractAddress: CONTRACTS.dao.voteAddress,
         methodName: 'Vote',
-        args: input.args,
+        args,
       },
       sendOptions(input),
     );
@@ -221,16 +331,17 @@ export async function daoVote(input: DaoVoteInput): Promise<ToolResult<unknown>>
   }
 }
 
-export async function daoWithdraw(input: DaoVoteInput): Promise<ToolResult<unknown>> {
+export async function daoWithdraw(input: DaoWithdrawInput): Promise<ToolResult<unknown>> {
   try {
     requireField(input.args, 'args');
+    const args = normalizeDaoWithdrawArgs(input.args);
     const chainId = daoChain(input.chainId);
     const result = await callSend(
       {
         chainId,
         contractAddress: CONTRACTS.dao.voteAddress,
         methodName: 'Withdraw',
-        args: input.args,
+        args,
       },
       sendOptions(input),
     );

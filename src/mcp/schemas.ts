@@ -35,21 +35,70 @@ export const networkProposalActionSchema = z
   .enum(['Approve', 'Reject', 'Abstain', 'Release'])
   .describe('Proposal action: Approve/Reject/Abstain/Release.');
 
+const daoIdLikeSchema = z.string().min(1);
+const daoIdListSchema = z.array(daoIdLikeSchema).min(1);
+
 export const daoVoteArgsSchema = z
   .object({
-    proposalId: z.string().min(1).describe('DAO proposal id to vote on.'),
+    proposalId: z.string().min(1).optional().describe('DAO proposal id alias for votingItemId.'),
+    votingItemId: z.string().min(1).optional().describe('DAO voting item id (chain hash).'),
     voteOption: z.number().int().describe('Vote option enum value from DAO vote contract.'),
-    voteAmount: z.number().nonnegative().describe('Vote amount in minimal token unit.'),
+    voteAmount: z.number().int().nonnegative().describe('Vote amount in minimal token unit.'),
+    memo: z.string().optional().describe('Optional vote memo passed to the vote contract.'),
   })
   .passthrough()
+  .superRefine((value, ctx) => {
+    if (!value.proposalId && !value.votingItemId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'proposalId or votingItemId is required',
+      });
+    }
+    if (value.proposalId && value.votingItemId && value.proposalId !== value.votingItemId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'proposalId and votingItemId must match when both are provided',
+      });
+    }
+  })
   .describe('DAO Vote contract args.');
 
 export const daoWithdrawArgsSchema = z
   .object({
-    proposalId: z.string().min(1).describe('DAO proposal id to withdraw vote from.'),
-    voteRecordId: z.string().min(1).describe('Vote record id returned by vote query.'),
+    daoId: z.string().min(1).describe('DAO id to withdraw vote from.'),
+    withdrawAmount: z.number().int().positive().describe('Withdraw amount in minimal token unit.'),
+    proposalId: daoIdLikeSchema.optional().describe('Single DAO proposal id alias for votingItemId.'),
+    proposalIds: daoIdListSchema.optional().describe('DAO proposal id aliases for votingItemIds.'),
+    votingItemId: daoIdLikeSchema.optional().describe('Single DAO voting item id (chain hash).'),
+    votingItemIds: daoIdListSchema.optional().describe('DAO voting item ids (chain hashes).'),
+    voteRecordId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe('Deprecated. Use daoId + withdrawAmount + proposalId/proposalIds or votingItemId/votingItemIds.'),
   })
   .passthrough()
+  .superRefine((value, ctx) => {
+    if (value.voteRecordId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'voteRecordId is no longer supported; use daoId + withdrawAmount + proposalId/proposalIds or votingItemId/votingItemIds',
+      });
+    }
+
+    const targetCount =
+      Number(Boolean(value.proposalId)) +
+      Number(Boolean(value.votingItemId)) +
+      Number(Boolean(value.proposalIds?.length)) +
+      Number(Boolean(value.votingItemIds?.length));
+    if (targetCount === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'proposalId/proposalIds or votingItemId/votingItemIds is required',
+      });
+    }
+  })
   .describe('DAO Withdraw contract args.');
 
 export const bpVoteArgsSchema = z
