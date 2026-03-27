@@ -10,6 +10,8 @@ TomorrowDAO 的 AI Agent Skills 工具包，提供 **MCP + OpenClaw + CLI + SDK*
 ## 功能概览
 
 - DAO：创建 DAO、更新 metadata、创建/投票/撤回/执行提案、讨论区接口
+- Token 读工具：balance view、allowance view
+- DAO 读工具：proposal my-info、DAO token allowance view alias、DAO token balance view alias
 - Network Governance：提案创建/投票/Release、组织创建、合约名管理、合约流程工具
 - BP Election：申请/退出、投票/撤回/切票、分红领取、团队信息维护
 - Resource：资源代币买卖与记录查询
@@ -32,7 +34,7 @@ tomorrowDAO-skill/
 ├── tomorrowdao_skill.ts    # CLI 适配层
 ├── src/
 │   ├── core/               # config/auth/http/chain/tx/error/types
-│   ├── domains/            # dao/network/bp/resource
+│   ├── domains/            # dao/token/network/bp/resource
 │   └── mcp/server.ts       # MCP 适配层
 ├── lib/                    # 兼容导出
 ├── bin/setup.ts            # claude/cursor/openclaw/ironclaw 一键配置
@@ -152,6 +154,15 @@ bun run tomorrowdao_skill.ts dao create --input '{"args":{"metadata":{"name":"de
 # DAO 投票（proposalId 和 votingItemId 都可作为 DAO 提案 hash 别名）
 bun run tomorrowdao_skill.ts dao vote --input '{"args":{"proposalId":"<PROPOSAL_ID>","voteOption":0,"voteAmount":100000000}}' --mode send
 
+# DAO Token 余额查询
+bun run tomorrowdao_skill.ts dao token-balance-view --input '{"chainId":"tDVV","symbol":"AIBOUNTY","owner":"<OWNER_ADDRESS>"}'
+
+# 通用 Token 余额查询
+bun run tomorrowdao_skill.ts token balance-view --input '{"chainId":"tDVV","symbol":"AIBOUNTY","owner":"<OWNER_ADDRESS>"}'
+
+# 通用 Token allowance 查询
+bun run tomorrowdao_skill.ts token allowance-view --input '{"chainId":"tDVV","symbol":"AIBOUNTY","owner":"<OWNER_ADDRESS>","spender":"<SPENDER_ADDRESS>"}'
+
 # DAO 撤票
 bun run tomorrowdao_skill.ts dao withdraw --input '{"args":{"daoId":"<DAO_ID>","withdrawAmount":100000000,"proposalId":"<PROPOSAL_ID>"}}' --mode send
 
@@ -230,9 +241,9 @@ const proposalRes = await networkProposalCreate({
 });
 ```
 
-## MCP 工具（共 41 个）
+## MCP 工具（共 44 个）
 
-### DAO（12）
+### DAO（13）
 - `tomorrowdao_dao_create`
 - `tomorrowdao_dao_update_metadata`
 - `tomorrowdao_dao_upload_files`
@@ -245,6 +256,11 @@ const proposalRes = await networkProposalCreate({
 - `tomorrowdao_discussion_comment`
 - `tomorrowdao_dao_proposal_my_info`
 - `tomorrowdao_dao_token_allowance_view`
+- `tomorrowdao_dao_token_balance_view`
+
+### Token（2）
+- `tomorrowdao_token_allowance_view`
+- `tomorrowdao_token_balance_view`
 
 ### Network Governance（13）
 - `tomorrowdao_network_proposals_list`

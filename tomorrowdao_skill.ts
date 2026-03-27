@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import packageJson from './package.json';
 import { parseJsonInput, printResult } from './cli-helpers.js';
 import * as dao from './src/domains/dao.js';
+import * as token from './src/domains/token.js';
 import * as network from './src/domains/network.js';
 import * as bp from './src/domains/bp.js';
 import * as resource from './src/domains/resource.js';
@@ -44,6 +45,11 @@ addInput(daoCmd.command('discussion-list')).action(withInput(dao.discussionList)
 addInput(daoCmd.command('discussion-comment')).action(withInput(dao.discussionComment));
 addInput(daoCmd.command('proposal-my-info')).action(withInput(dao.daoProposalMyInfo));
 addInput(daoCmd.command('token-allowance-view')).action(withInput(dao.daoTokenAllowanceView));
+addInput(daoCmd.command('token-balance-view')).action(withInput(dao.daoTokenBalanceView));
+
+const tokenCmd = program.command('token').description('Generic token read helpers');
+addInput(tokenCmd.command('allowance-view')).action(withInput(token.tokenAllowanceView));
+addInput(tokenCmd.command('balance-view')).action(withInput(token.tokenBalanceView));
 
 const networkCmd = program.command('network').description('Network governance domain tools');
 addInput(networkCmd.command('proposals-list')).action(withInput(network.networkProposalsList));

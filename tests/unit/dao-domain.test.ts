@@ -6,6 +6,7 @@ import {
   daoExecute,
   daoProposalCreate,
   daoProposalMyInfo,
+  daoTokenBalanceView,
   daoRemoveFiles,
   daoTokenAllowanceView,
   daoUpdateMetadata,
@@ -235,6 +236,17 @@ describe('dao domain', () => {
       symbol: 'ELF',
       owner: 'owner',
       spender: 'spender',
+    });
+
+    expect(result.success).toBeFalse();
+    expect(result.error?.code).toBe('UNSUPPORTED_CHAIN');
+  });
+
+  test('returns fail result for token balance on unsupported chain', async () => {
+    const result = await daoTokenBalanceView({
+      chainId: 'UNKNOWN' as any,
+      symbol: 'AIBOUNTY',
+      owner: 'owner',
     });
 
     expect(result.success).toBeFalse();
