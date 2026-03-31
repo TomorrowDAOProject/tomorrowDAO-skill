@@ -63,6 +63,15 @@ export const daoVoteArgsSchema = z
   })
   .describe('DAO Vote contract args.');
 
+export const tokenApproveArgsSchema = z
+  .object({
+    spender: z.string().min(1).describe('Approved spender address.'),
+    symbol: z.string().min(1).describe('Token symbol.'),
+    amount: z.number().int().nonnegative().describe('Approve amount in minimal token unit.'),
+  })
+  .passthrough()
+  .describe('Token Approve contract args.');
+
 export const daoWithdrawArgsSchema = z
   .object({
     daoId: z.string().min(1).describe('DAO id to withdraw vote from.'),

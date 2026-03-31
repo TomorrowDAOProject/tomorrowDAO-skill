@@ -1,6 +1,6 @@
 ---
 name: "tomorrowdao-agent-skills"
-version: "0.2.1"
+version: "0.2.2"
 description: "TomorrowDAO governance, BP, and resource operations for agents."
 activation:
   keywords:
@@ -33,7 +33,7 @@ activation:
 
 ## Capabilities
 - DAO domain: create/update/proposal/discussion operations
-- Token read helpers: allowance view, balance view
+- Token helpers: allowance view, approve payload/sent call, balance view
 - DAO read helpers: proposal my-info, DAO token allowance view alias, DAO token balance view alias
 - Network governance and BP election operation set
 - Resource token trading with unified ToolResult/TxReceipt outputs
@@ -45,6 +45,7 @@ activation:
 - Never print private keys, mnemonics, or tokens in channel outputs.
 - For write operations, require explicit user confirmation and validate parameters before sending transactions.
 - Prefer `simulate` or read-only queries first when available.
+- For CA orchestration flows, use `simulate` payloads from this skill together with an explicit CA forward transport for the actual write.
 - Active wallet context stores identity pointers only; never persist plaintext private keys.
 - A `CA` keystore may unlock the manager key, but this skill still rejects direct target-contract sends for `CA` identities.
 

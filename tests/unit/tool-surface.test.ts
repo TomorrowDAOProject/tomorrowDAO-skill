@@ -20,6 +20,7 @@ const REQUIRED_TOOLS = [
   'tomorrowdao_discussion_comment',
   'tomorrowdao_dao_proposal_my_info',
   'tomorrowdao_token_allowance_view',
+  'tomorrowdao_token_approve',
   'tomorrowdao_token_balance_view',
   'tomorrowdao_dao_token_allowance_view',
   'tomorrowdao_dao_token_balance_view',

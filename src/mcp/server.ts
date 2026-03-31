@@ -24,6 +24,7 @@ import {
   networkProposalActionSchema,
   networkProposalTypeSchema,
   skipCountSchema,
+  tokenApproveArgsSchema,
 } from './schemas.js';
 
 const server = new McpServer({
@@ -248,6 +249,17 @@ registerTool(
     spender: addressSchema.describe('Spender address.'),
   },
   token.tokenAllowanceView,
+);
+
+registerTool(
+  'tomorrowdao_token_approve',
+  'Approve token allowance on the default token contract',
+  {
+    chainId: chainIdSchema,
+    args: tokenApproveArgsSchema,
+    mode: modeSchema,
+  },
+  token.tokenApprove,
 );
 
 registerTool(
