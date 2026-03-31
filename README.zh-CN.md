@@ -207,6 +207,8 @@ bun run src/mcp/server.ts
 2. active wallet context（`~/.portkey/skill-wallet/context.v1.json`）
 3. 环境变量回退（`TMRW_PRIVATE_KEY` -> `AELF_PRIVATE_KEY` -> `PORTKEY_PRIVATE_KEY`）
 
+如果 send 模式最终解析到的是 `CA` 身份，这个 skill 会直接返回 `SIGNER_CA_DIRECT_SEND_FORBIDDEN`，不会继续直发目标合约。`CA` keystore 虽然会解锁 manager key，但真正的 `CA` 写操作仍然必须走显式的 CA forward transport。
+
 `signerMode=daemon` 仅预埋接口，本轮返回 `SIGNER_DAEMON_NOT_IMPLEMENTED`。
 
 ### OpenClaw

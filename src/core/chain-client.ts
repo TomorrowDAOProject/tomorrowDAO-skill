@@ -14,6 +14,7 @@ import { getWalletByPrivateKey } from './signature.js';
 import { waitForTxResult } from './tx-waiter.js';
 import { clearAelfPool, getAelfByRpc } from './aelf-pool.js';
 import { resolvePrivateKeyContext } from './signer-context.js';
+import { SIGNER_ERROR_CODES } from './signer-error-codes.js';
 import type { SignerContextInput } from './wallet-context.js';
 
 export function clearAelfCache(): void {
@@ -80,6 +81,18 @@ export async function callSend(
     ...(options?.signer || {}),
     privateKey: options?.privateKey,
   });
+  if (resolved.identity.walletType === 'CA') {
+    throw new SkillError(
+      SIGNER_ERROR_CODES.CA_DIRECT_SEND_FORBIDDEN,
+      'current signer resolves to a CA-backed identity; tomorrowdao-skill does not support direct contract send for CA signers, use an explicit CA forward transport instead',
+      {
+        provider: resolved.provider,
+        walletType: resolved.identity.walletType,
+        caHash: resolved.identity.caHash,
+        caAddress: resolved.identity.caAddress,
+      },
+    );
+  }
   const privateKey = resolved.privateKey;
 
   const { contract, rpc } = await getContract(input, privateKey);
