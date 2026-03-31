@@ -10,7 +10,7 @@ TomorrowDAO 的 AI Agent Skills 工具包，提供 **MCP + OpenClaw + CLI + SDK*
 ## 功能概览
 
 - DAO：创建 DAO、更新 metadata、创建/投票/撤回/执行提案、讨论区接口
-- Token 读工具：balance view、allowance view
+- Token 工具：balance view、allowance view、approve payload/send helper
 - DAO 读工具：proposal my-info、DAO token allowance view alias、DAO token balance view alias
 - Network Governance：提案创建/投票/Release、组织创建、合约名管理、合约流程工具
 - BP Election：申请/退出、投票/撤回/切票、分红领取、团队信息维护
@@ -163,6 +163,9 @@ bun run tomorrowdao_skill.ts token balance-view --input '{"chainId":"tDVV","symb
 # 通用 Token allowance 查询
 bun run tomorrowdao_skill.ts token allowance-view --input '{"chainId":"tDVV","symbol":"AIBOUNTY","owner":"<OWNER_ADDRESS>","spender":"<SPENDER_ADDRESS>"}'
 
+# 通用 Token approve（CA forward 编排优先用 simulate，EOA 写入可直接 send）
+bun run tomorrowdao_skill.ts token approve --input '{"chainId":"tDVV","args":{"spender":"<SPENDER_ADDRESS>","symbol":"AIBOUNTY","amount":200000000}}' --mode simulate
+
 # DAO 撤票
 bun run tomorrowdao_skill.ts dao withdraw --input '{"args":{"daoId":"<DAO_ID>","withdrawAmount":100000000,"proposalId":"<PROPOSAL_ID>"}}' --mode send
 
@@ -243,7 +246,7 @@ const proposalRes = await networkProposalCreate({
 });
 ```
 
-## MCP 工具（共 44 个）
+## MCP 工具（共 45 个）
 
 ### DAO（13）
 - `tomorrowdao_dao_create`
@@ -260,8 +263,9 @@ const proposalRes = await networkProposalCreate({
 - `tomorrowdao_dao_token_allowance_view`
 - `tomorrowdao_dao_token_balance_view`
 
-### Token（2）
+### Token（3）
 - `tomorrowdao_token_allowance_view`
+- `tomorrowdao_token_approve`
 - `tomorrowdao_token_balance_view`
 
 ### Network Governance（13）

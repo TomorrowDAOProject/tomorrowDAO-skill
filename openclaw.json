@@ -568,6 +568,159 @@
       }
     },
     {
+      "name": "tomorrowdao_token_approve",
+      "description": "Approve token allowance on the default token contract.",
+      "command": "bun",
+      "args": [
+        "run",
+        "tomorrowdao_skill.ts",
+        "token",
+        "approve"
+      ],
+      "cwd": ".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "enum": [
+              "AELF",
+              "tDVV"
+            ],
+            "description": "Chain id"
+          },
+          "args": {
+            "type": "object",
+            "description": "Token Approve contract args.",
+            "properties": {
+              "spender": {
+                "type": "string",
+                "description": "Approved spender address."
+              },
+              "symbol": {
+                "type": "string",
+                "description": "Token symbol."
+              },
+              "amount": {
+                "type": "number",
+                "description": "Approve amount in minimal token unit."
+              }
+            },
+            "required": [
+              "spender",
+              "symbol",
+              "amount"
+            ],
+            "additionalProperties": true
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "simulate",
+              "send"
+            ],
+            "description": "Execution mode."
+          },
+          "signer": {
+            "type": "object",
+            "description": "Optional signer input. signerMode=auto resolves explicit -> active context -> env. daemon is reserved. Send mode rejects direct contract send when the resolved signer is CA-backed; use an explicit CA forward transport instead.",
+            "properties": {
+              "signerMode": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "explicit",
+                  "context",
+                  "env",
+                  "daemon"
+                ]
+              },
+              "walletType": {
+                "type": "string",
+                "enum": [
+                  "EOA",
+                  "CA"
+                ]
+              },
+              "address": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              },
+              "privateKey": {
+                "type": "string"
+              },
+              "caHash": {
+                "type": "string"
+              },
+              "caAddress": {
+                "type": "string"
+              },
+              "network": {
+                "type": "string",
+                "enum": [
+                  "mainnet",
+                  "testnet"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "signerContext": {
+            "type": "object",
+            "description": "Optional signer input. signerMode=auto resolves explicit -> active context -> env. daemon is reserved. Send mode rejects direct contract send when the resolved signer is CA-backed; use an explicit CA forward transport instead.",
+            "properties": {
+              "signerMode": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "explicit",
+                  "context",
+                  "env",
+                  "daemon"
+                ]
+              },
+              "walletType": {
+                "type": "string",
+                "enum": [
+                  "EOA",
+                  "CA"
+                ]
+              },
+              "address": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              },
+              "privateKey": {
+                "type": "string"
+              },
+              "caHash": {
+                "type": "string"
+              },
+              "caAddress": {
+                "type": "string"
+              },
+              "network": {
+                "type": "string",
+                "enum": [
+                  "mainnet",
+                  "testnet"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "args"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
       "name": "tomorrowdao_token_balance_view",
       "description": "Get token balance.",
       "command": "bun",

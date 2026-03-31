@@ -10,7 +10,7 @@ TomorrowDAO AI agent skill toolkit on aelf, with **MCP + OpenClaw + CLI + SDK** 
 ## Features
 
 - DAO: create DAO, update metadata, create/vote/withdraw/execute proposal, discussion APIs
-- Token read helpers: balance view, allowance view
+- Token helpers: balance view, allowance view, approve payload/send helper
 - DAO read helpers: proposal my-info, DAO token allowance view alias, DAO token balance view alias
 - Network governance: proposal create/vote/release, organization create, contract-name management, contract-flow actions
 - BP election: apply, quit, vote, withdraw, change vote, claim profits, team description updates
@@ -163,6 +163,9 @@ bun run tomorrowdao_skill.ts token balance-view --input '{"chainId":"tDVV","symb
 # Generic token allowance view
 bun run tomorrowdao_skill.ts token allowance-view --input '{"chainId":"tDVV","symbol":"AIBOUNTY","owner":"<OWNER_ADDRESS>","spender":"<SPENDER_ADDRESS>"}'
 
+# Generic token approve (simulate for CA-forward orchestration, send for EOA flows)
+bun run tomorrowdao_skill.ts token approve --input '{"chainId":"tDVV","args":{"spender":"<SPENDER_ADDRESS>","symbol":"AIBOUNTY","amount":200000000}}' --mode simulate
+
 # DAO withdraw
 bun run tomorrowdao_skill.ts dao withdraw --input '{"args":{"daoId":"<DAO_ID>","withdrawAmount":100000000,"proposalId":"<PROPOSAL_ID>"}}' --mode send
 
@@ -243,7 +246,7 @@ const proposalRes = await networkProposalCreate({
 });
 ```
 
-## MCP Tools (44)
+## MCP Tools (45)
 
 ### DAO (13)
 - `tomorrowdao_dao_create`
@@ -260,8 +263,9 @@ const proposalRes = await networkProposalCreate({
 - `tomorrowdao_dao_token_allowance_view`
 - `tomorrowdao_dao_token_balance_view`
 
-### Token (2)
+### Token (3)
 - `tomorrowdao_token_allowance_view`
+- `tomorrowdao_token_approve`
 - `tomorrowdao_token_balance_view`
 
 ### Network Governance (13)

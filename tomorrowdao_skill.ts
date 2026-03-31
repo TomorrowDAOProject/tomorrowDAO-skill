@@ -49,6 +49,7 @@ addInput(daoCmd.command('token-balance-view')).action(withInput(dao.daoTokenBala
 
 const tokenCmd = program.command('token').description('Generic token read helpers');
 addInput(tokenCmd.command('allowance-view')).action(withInput(token.tokenAllowanceView));
+addMode(addInput(tokenCmd.command('approve')).action(withInput(token.tokenApprove)));
 addInput(tokenCmd.command('balance-view')).action(withInput(token.tokenBalanceView));
 
 const networkCmd = program.command('network').description('Network governance domain tools');

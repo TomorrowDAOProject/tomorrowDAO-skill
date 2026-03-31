@@ -1,7 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { daoVoteArgsSchema, daoWithdrawArgsSchema } from '../../src/mcp/schemas.js';
+import {
+  daoVoteArgsSchema,
+  daoWithdrawArgsSchema,
+  tokenApproveArgsSchema,
+} from '../../src/mcp/schemas.js';
 
 const ROOT = path.resolve(import.meta.dir, '..', '..');
 const MCP_SERVER_PATH = path.join(ROOT, 'src', 'mcp', 'server.ts');
@@ -11,6 +15,7 @@ describe('mcp schema quality', () => {
   test('high-frequency vote tools use explicit schema objects', () => {
     const source = fs.readFileSync(MCP_SERVER_PATH, 'utf-8');
     expect(source.includes('args: daoVoteArgsSchema')).toBeTrue();
+    expect(source.includes('args: tokenApproveArgsSchema')).toBeTrue();
     expect(source.includes('args: daoWithdrawArgsSchema')).toBeTrue();
     expect(source.includes('args: bpVoteArgsSchema')).toBeTrue();
     expect(source.includes('args: bpChangeVoteArgsSchema')).toBeTrue();
@@ -32,6 +37,10 @@ describe('mcp schema quality', () => {
     expect(schemaSource.includes('votingItemId: z.string().min(1).optional()')).toBeTrue();
     expect(schemaSource.includes('voteOption: z.number().int()')).toBeTrue();
     expect(schemaSource.includes('voteAmount: z.number().int().nonnegative()')).toBeTrue();
+    expect(schemaSource.includes('export const tokenApproveArgsSchema')).toBeTrue();
+    expect(schemaSource.includes('spender: z.string().min(1)')).toBeTrue();
+    expect(schemaSource.includes('symbol: z.string().min(1)')).toBeTrue();
+    expect(schemaSource.includes('amount: z.number().int().nonnegative()')).toBeTrue();
     expect(schemaSource.includes('withdrawAmount: z.number().int().positive()')).toBeTrue();
     expect(schemaSource.includes('export const bpVoteArgsSchema')).toBeTrue();
     expect(schemaSource.includes('candidatePubkey: z.string().min(1)')).toBeTrue();
@@ -94,5 +103,13 @@ describe('mcp schema quality', () => {
 
     expect(deprecated.success).toBeFalse();
     expect(missingTarget.success).toBeFalse();
+  });
+
+  test('token approve schema accepts required fields', () => {
+    expect(tokenApproveArgsSchema.safeParse({
+      spender: 'spender-1',
+      symbol: 'AIBOUNTY',
+      amount: 200000000,
+    }).success).toBeTrue();
   });
 });

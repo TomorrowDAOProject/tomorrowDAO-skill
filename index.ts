@@ -34,8 +34,8 @@ export {
   daoTokenBalanceView,
 } from './src/domains/dao.js';
 
-// Token read helpers
-export { tokenAllowanceView, tokenBalanceView } from './src/domains/token.js';
+// Token helpers
+export { tokenAllowanceView, tokenApprove, tokenBalanceView } from './src/domains/token.js';
 
 // Network governance
 export {
