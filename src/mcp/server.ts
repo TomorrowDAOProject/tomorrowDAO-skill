@@ -75,7 +75,7 @@ const signerInputSchema = z
   })
   .optional()
   .describe(
-    'Optional signer input. signerMode=auto resolves explicit -> active context -> env. daemon is reserved.',
+    'Optional signer input. signerMode=auto resolves explicit -> active context -> env. daemon is reserved. Send mode rejects direct contract send when the resolved signer is CA-backed; use an explicit CA forward transport instead.',
   );
 
 function registerTool(

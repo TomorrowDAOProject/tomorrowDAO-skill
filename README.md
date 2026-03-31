@@ -207,6 +207,8 @@ Write operations resolve signer in this order:
 2. active wallet context (`~/.portkey/skill-wallet/context.v1.json`)
 3. env fallback (`TMRW_PRIVATE_KEY` -> `AELF_PRIVATE_KEY` -> `PORTKEY_PRIVATE_KEY`)
 
+If send mode resolves a `CA` identity, this skill stops with `SIGNER_CA_DIRECT_SEND_FORBIDDEN` instead of sending directly to the target contract. A `CA` keystore may unlock the manager key, but real `CA` writes must still go through an explicit CA forward transport.
+
 `signerMode=daemon` is pre-wired and currently returns `SIGNER_DAEMON_NOT_IMPLEMENTED`.
 
 ### OpenClaw

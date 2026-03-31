@@ -1,6 +1,6 @@
 ---
 name: "tomorrowdao-agent-skills"
-version: "0.2.0"
+version: "0.2.1"
 description: "TomorrowDAO governance, BP, and resource operations for agents."
 activation:
   keywords:
@@ -38,6 +38,7 @@ activation:
 - Network governance and BP election operation set
 - Resource token trading with unified ToolResult/TxReceipt outputs
 - Shared signer resolution for send mode: `explicit -> context -> env`
+- Send mode blocks direct contract sends when the resolved signer is `CA`; use an explicit CA forward transport instead.
 - Supports SDK, CLI, MCP, OpenClaw, and IronClaw integration from one codebase.
 
 ## Safe usage rules
@@ -45,6 +46,7 @@ activation:
 - For write operations, require explicit user confirmation and validate parameters before sending transactions.
 - Prefer `simulate` or read-only queries first when available.
 - Active wallet context stores identity pointers only; never persist plaintext private keys.
+- A `CA` keystore may unlock the manager key, but this skill still rejects direct target-contract sends for `CA` identities.
 
 ## Command recipes
 - Start MCP server: `bun run mcp`

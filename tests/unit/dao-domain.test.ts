@@ -230,6 +230,26 @@ describe('dao domain', () => {
     expect(result.error?.code).toBe('SIGNER_CONTEXT_NOT_FOUND');
   });
 
+  test('returns fail result when send mode resolves to CA signer', async () => {
+    resetTestEnv({
+      TMRW_PRIVATE_KEY: '1'.repeat(64),
+      PORTKEY_CA_HASH: 'ca_hash_1',
+      PORTKEY_CA_ADDRESS: 'ELF_ca_1_AELF',
+      TMRW_CHAIN_DEFAULT_DAO: 'tDVV',
+    });
+    clearTokenCache();
+    resetConfigCache();
+
+    const result = await daoVote({
+      chainId: 'tDVV',
+      args: { proposalId: 'p-1', voteOption: 1, voteAmount: 0 },
+      mode: 'send',
+    });
+
+    expect(result.success).toBeFalse();
+    expect(result.error?.code).toBe('SIGNER_CA_DIRECT_SEND_FORBIDDEN');
+  });
+
   test('returns fail result for token allowance on unsupported chain', async () => {
     const result = await daoTokenAllowanceView({
       chainId: 'UNKNOWN' as any,
